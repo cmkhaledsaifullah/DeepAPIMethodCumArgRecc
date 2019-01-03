@@ -1,12 +1,12 @@
 # DAMCA Recommender
 The repository is a python project that has a Bi directional LSTM based Encoder Decoder with Attention mechanism and Beam Search tool. Primary purpose is to reccomend the API method call along with arguments for Java.
 
-##Get Started
+## Get Started
 To know about the content and how it works lets looks at the files and folder we have in the repository.
 Next we will learn how to install the project and use it for training, testing and infering. If we want to describe the DAMCA Recommender in a single sentence:
 the project takes code tokens as input sequence and returns a list the method call with arguments as suggestion.
 
-###Contains
+### Contains
 The project contains several python scripts by which the DAMCA Recommender tool execute.
 
 * __main__.py: This python script initiates the tool. User needs to run the scripts to train, test or infer.
@@ -25,14 +25,14 @@ There are some folders that contains specific elements for the program.
 * /results: It contains the raw results for each test case. Evaluation.py uses these data to get the evaluation metrics.
 * /vocabulary: It has two file: input.vocab(vocabulary for input sequence) and output.vocab(vocabulary for output sequences)
 
-###Requirements:
+### Requirements:
 Following packages need to be installed in order to run the program:
 ```
 python 3.5 or more
 pip3
 ```
 
-###Installation Step:
+### Installation Step:
 
 1. Clone the repository using following command: 
     ```
