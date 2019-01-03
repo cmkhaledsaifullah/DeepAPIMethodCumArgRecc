@@ -111,8 +111,11 @@ class Vocab:
     #
 
     def prepareData(self, lang1, lang2, reverse, datasetfilepath):
-        train_data = self.collectDataset(datasetfilepath)
-        input_lang, output_lang, pairs = self.readLangs(train_data, lang2, lang1, reverse)
+        train_data = self.collectDataset(datasetfilepath = datasetfilepath)
+        input_lang, output_lang, pairs = self.readLangs(data = train_data,
+                                                        lang1 = lang2,
+                                                        lang2 = lang1,
+                                                        reverse = reverse)
         # _,_ , test_pairs = self.readLangs(self, test_data, lang2, lang1, reverse)
 
         # print("Read %s sentence pairs" % len(pairs))

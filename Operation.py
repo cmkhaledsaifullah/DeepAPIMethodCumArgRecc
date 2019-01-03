@@ -34,8 +34,6 @@ class Training:
                 input_lang.appendLang(temp_input_lang)
                 output_lang.appendLang(temp_output_lang)
 
-
-
         if is_save_vocabulary == True:
             print('Saving Input and Output Vocabulary into the Disk....')
             input_lang = dictonary.save_vocabulary(vocab_path=config.input_vocab_file_path,
