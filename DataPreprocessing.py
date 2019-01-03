@@ -67,7 +67,7 @@ class Lang:
 # want to translate from Other Language → English I added the ``reverse``
 # flag to reverse the pairs.
 #
-class Dict:
+class Vocab:
     def __init__(self):
         self.threshold = [0.46,0.54,0.62,0.52,0.6]
 
@@ -110,8 +110,21 @@ class Dict:
     # -  Make word lists from sentences in pairs
     #
 
+    def prepareData(self, lang1, lang2, reverse, datasetfilepath):
+        train_data = self.collectDataset(datasetfilepath)
+        input_lang, output_lang, pairs = self.readLangs(train_data, lang2, lang1, reverse)
+        # _,_ , test_pairs = self.readLangs(self, test_data, lang2, lang1, reverse)
 
-
+        # print("Read %s sentence pairs" % len(pairs))
+        # print("Read %s testing sentence pairs" % len(test_pairs))
+        # print("Counting words...")
+        for pair in pairs:
+            input_lang.addSentence(pair[0])
+            output_lang.addSentence(pair[1])
+        # print("Counted words:")
+        # print(input_lang.name, input_lang.n_words)
+        # print(output_lang.name, output_lang.n_words)
+        return input_lang, output_lang, pairs
 
     def prepareOneData(self,lang1,lang2,reverse,input_line):
         test_data = []

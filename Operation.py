@@ -1,15 +1,9 @@
-import config
-
-from DataPreprocessing import Dict,Lang
+import config,CreateDataset,keras,os,Evaluation, numpy as np, tensorflow as tf
+from DataPreprocessing import Vocab,Lang
 from NNStructure import trainModel,encoder,decoder,trainNoTeacher,trainModelRNN,trainModelLSTM,encoderRNN,decoderRNN,encoderLSTM,decoderLSTM
-import CreateDataset
 from keras.callbacks import EarlyStopping, ModelCheckpoint
-import numpy as np
-import tensorflow as tf
-import keras
-import os
 from operator import itemgetter
-import Evaluation
+
 class Training:
 
     def __init__(self, input_vocab_size,output_vocab_size):
@@ -21,13 +15,21 @@ class Training:
         input_lang = Lang()
         output_lang = Lang()
         train_pairs=[]
-        dictonary = Dict()
+        dictonary = Vocab()
+        #when path of training dataset is a file
         if(os.path.isfile(config.train_dataset_file_path)):
-            input_lang, output_lang, train_pairs = dictonary.prepareData('Context', 'Label', True,config.train_dataset_file_path)
+            input_lang, output_lang, train_pairs = dictonary.prepareData(lang1='Context',
+                                                                         lang2='Label',
+                                                                         reverse=True,
+                                                                         datasetfilepath=config.train_dataset_file_path)
+        #when path of training dataset is a folder
         elif(os.path.isdir(config.train_dataset_file_path)):
             for path in os.listdir(config.train_dataset_file_path):
-                print(os.path.join(config.train_dataset_file_path,path))
-                temp_input_lang, temp_output_lang, temp_train_pairs = dictonary.prepareData('Context', 'Label', True,os.path.join(config.train_dataset_file_path,path))
+                #print(os.path.join(config.train_dataset_file_path,path))
+                temp_input_lang, temp_output_lang, temp_train_pairs = dictonary.prepareData(lang1='Context',
+                                                                                            lang2='Label',
+                                                                                            reverse=True,
+                                                                                            datasetfilepath=os.path.join(config.train_dataset_file_path,path))
                 train_pairs.extend(temp_train_pairs)
                 input_lang.appendLang(temp_input_lang)
                 output_lang.appendLang(temp_output_lang)
@@ -36,13 +38,19 @@ class Training:
 
         if is_save_vocabulary == True:
             print('Saving Input and Output Vocabulary into the Disk....')
-            input_lang = dictonary.save_vocabulary(config.input_vocab_file_path,input_lang,self.input_vocab_size)
-            output_lang = dictonary.save_vocabulary(config.output_vocab_file_path,output_lang,self.output_vocab_size)
+            input_lang = dictonary.save_vocabulary(vocab_path=config.input_vocab_file_path,
+                                                   lang=input_lang,
+                                                   max_size=self.input_vocab_size)
+            output_lang = dictonary.save_vocabulary(vocab_path=config.output_vocab_file_path,
+                                                    lang=output_lang,
+                                                    max_size=self.output_vocab_size)
 
         else:
             print("Resizing Vocabulary ....")
-            input_lang = dictonary.vocabResize(input_lang, self.input_vocab_size)
-            output_lang = dictonary.vocabResize(output_lang, self.output_vocab_size)
+            input_lang = dictonary.vocabResize(lang=input_lang,
+                                               max_size=self.input_vocab_size)
+            output_lang = dictonary.vocabResize(lang=output_lang,
+                                                max_size=self.output_vocab_size)
 
         model = trainModel(MAX_LENGTH_Input= config.MAX_LENGTH_Input,
                            vocab_size_input= self.input_vocab_size,
@@ -92,7 +100,7 @@ class Training:
         input_lang = Lang()
         output_lang = Lang()
         train_pairs=[]
-        dictonary = Dict()
+        dictonary = Vocab()
         if(os.path.isfile(config.train_dataset_file_path)):
             input_lang, output_lang, train_pairs = dictonary.prepareData('Context', 'Label', True,config.train_dataset_file_path)
         elif(os.path.isdir(config.train_dataset_file_path)):
@@ -232,7 +240,7 @@ class Testing:
                       optimizer= config.optimizer,
                       metrics= config.metrics)
 
-        dictonary = Dict()
+        dictonary = Vocab()
         _, _, test_pairs = dictonary.prepareData('Context', 'Label', True,
                                                                 config.test_dataset_file_path)
         #print(test_pairs)
@@ -373,7 +381,7 @@ class Testing:
         returnTop_K_Pair = []
 
         for i in range(top_k):
-            while "NA" in Dict.getindex2word(Dict, self.output_lang, np.argmax(predicted_output[0, -1, :])) or np.argmax(predicted_output[0, -1, :]) == 0:
+            while "NA" in Vocab.getindex2word(Vocab, self.output_lang, np.argmax(predicted_output[0, -1, :])) or np.argmax(predicted_output[0, -1, :]) == 0:
                 sampled_token_index = np.argmax(predicted_output[0, -1, :])
                 predicted_output[0, 0, sampled_token_index] = 0;
 
@@ -469,7 +477,7 @@ class OneTesting:
                       optimizer= config.optimizer,
                       metrics= config.metrics)
 
-        dictonary = Dict()
+        dictonary = Vocab()
         _, _, test_pairs = dictonary.prepareOneData('Context', 'Label', True,self.input_seq)
 
         encoder_input, decoder_input, decoder_output = CreateDataset.datasetCreation(n_iters= len(test_pairs),
@@ -588,7 +596,7 @@ class OneTesting:
         returnTop_K_Pair = []
 
         for i in range(top_k):
-            while "NA" in Dict.getindex2word(Dict, self.output_lang, np.argmax(predicted_output[0, -1, :])) or np.argmax(predicted_output[0, -1, :]) == 0:
+            while "NA" in Vocab.getindex2word(Vocab, self.output_lang, np.argmax(predicted_output[0, -1, :])) or np.argmax(predicted_output[0, -1, :]) == 0:
                 sampled_token_index = np.argmax(predicted_output[0, -1, :])
                 predicted_output[0, 0, sampled_token_index] = 0;
 
