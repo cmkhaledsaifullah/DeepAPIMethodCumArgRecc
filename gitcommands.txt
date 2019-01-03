@@ -1,0 +1,7 @@
+git checkout --orphan contextcolelctor
+
+git add .
+
+git commit -a -m 'Commit Message'
+
+git push origin contextcollector
