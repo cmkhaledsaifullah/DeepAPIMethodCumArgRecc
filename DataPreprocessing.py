@@ -61,12 +61,7 @@ class Lang:
             print("Cant Find the Word %s in the Dictonary" % word )
 
 
-######################################################################
-# To read the data file we will split the file into lines, and then split
-# lines into pairs. The files are all English → Other Language, so if we
-# want to translate from Other Language → English I added the ``reverse``
-# flag to reverse the pairs.
-#
+
 class Vocab:
     def __init__(self):
         self.threshold = [0.46,0.54,0.62,0.52,0.6]
@@ -79,16 +74,11 @@ class Vocab:
 
 
     def readLangs(self,data,lang1, lang2, reverse=False):
-        #print("Reading lines and spliting into input(context) and output(label).....")
         pairs = []
         for eachline in data:
             token = eachline.split('+++$+++')
-            #print(token)
             input = token[2].strip()+" "+token[3].strip()
             pairs.append((token[0],token[1].strip(),input.strip()))
-
-        #print("Creating input and output vocabulary......")
-        # Reverse pairs, make Lang instances
         if reverse:
             pairs = [list(reversed(p)) for p in pairs]
             input_lang = Lang(lang2)
@@ -99,54 +89,31 @@ class Vocab:
 
         return input_lang, output_lang, pairs
 
-
-
-
-    ######################################################################
-    # The full process for preparing the data is:
-    #
-    # -  Read text file and split into lines, split lines into pairs
-    # -  Normalize text, filter by length and content
-    # -  Make word lists from sentences in pairs
-    #
-
     def prepareData(self, lang1, lang2, reverse, datasetfilepath):
         train_data = self.collectDataset(datasetfilepath = datasetfilepath)
         input_lang, output_lang, pairs = self.readLangs(data = train_data,
                                                         lang1 = lang2,
                                                         lang2 = lang1,
                                                         reverse = reverse)
-        # _,_ , test_pairs = self.readLangs(self, test_data, lang2, lang1, reverse)
-
-        # print("Read %s sentence pairs" % len(pairs))
-        # print("Read %s testing sentence pairs" % len(test_pairs))
-        # print("Counting words...")
         for pair in pairs:
             input_lang.addSentence(pair[0])
             output_lang.addSentence(pair[1])
-        # print("Counted words:")
-        # print(input_lang.name, input_lang.n_words)
-        # print(output_lang.name, output_lang.n_words)
         return input_lang, output_lang, pairs
 
     def prepareOneData(self,lang1,lang2,reverse,input_line):
         test_data = []
         test_data.append(input_line)
-        input_lang, output_lang, pairs = self.readLangs(test_data,lang2,lang1,reverse)
-        #_,_ , test_pairs = self.readLangs(self, test_data, lang2, lang1, reverse)
-
-        #print("Read %s sentence pairs" % len(pairs))
-        #print("Read %s testing sentence pairs" % len(test_pairs))
-        #print("Counting words...")
+        input_lang, output_lang, pairs = self.readLangs(data = test_data,
+                                                        lang1 = lang2,
+                                                        lang2 = lang1,
+                                                        reverse = reverse)
         for pair in pairs:
             input_lang.addSentence(pair[0])
             output_lang.addSentence(pair[1])
-        #print("Counted words:")
-        #print(input_lang.name, input_lang.n_words)
-        #print(output_lang.name, output_lang.n_words)
         return input_lang, output_lang, pairs
 
     def vocabResize(self,lang,max_size):
+        print(lang.n_words)
         test = OrderedDict(sorted(lang.word2count.items(), key=itemgetter(1),reverse=True))
         n_items = self.take(max_size, test.items())
         lang = Lang()

@@ -5,6 +5,9 @@ def evaluate(output):
     correct_pred = 0
     null_pred = 0
     incorrect_pred = 0
+    precision = 0
+    recall = 0
+    fmeasure = 0
     blue_score=0
     mrr = 0;
     chencherry = SmoothingFunction()
@@ -35,9 +38,12 @@ def evaluate(output):
                 blue_score += sentence_bleu(reference, candidate, weights=(1, 0, 0, 0),smoothing_function=chencherry.method1)
 
 
-    precision = (correct_pred/(correct_pred+incorrect_pred))
-    recall = (correct_pred/(correct_pred+null_pred))
-    fmeasure = ((2*precision*recall)/(precision+recall))
+    if (correct_pred+incorrect_pred) != 0:
+        precision = (correct_pred/(correct_pred+incorrect_pred))
+    if (correct_pred+null_pred) != 0:
+        recall = (correct_pred/(correct_pred+null_pred))
+    if (precision+recall) != 0:
+        fmeasure = ((2*precision*recall)/(precision+recall))
     blue_score = blue_score/len(output)
     mrr = mrr/len(output)
 

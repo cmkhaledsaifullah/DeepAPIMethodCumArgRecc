@@ -3,6 +3,8 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/DAMCARecommender.iml" filepath="$PROJECT_DIR$/.idea/DAMCARecommender.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../Sequence2Sequence/[keras]sequence2sequence/.idea/[keras]sequence2sequence.iml" filepath="$PROJECT_DIR$/../Sequence2Sequence/[keras]sequence2sequence/.idea/[keras]sequence2sequence.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../deepAPI/.idea/deepAPI.iml" filepath="$PROJECT_DIR$/../deepAPI/.idea/deepAPI.iml" />
     </modules>
   </component>
 </project>

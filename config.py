@@ -6,7 +6,8 @@ def init():
         test_dataset_file_path,\
         input_vocab_file_path, \
         output_vocab_file_path, \
-        test_dataset_output_file_path,\
+        test_dataset_output_file_path, \
+        checkpoints_folder_path, \
         MAX_LENGTH_Input, \
         MAX_LENGTH_Output, \
         SOS_token,\
@@ -31,20 +32,23 @@ def init():
         model_file_path, \
         MAX_VOCAB_SIZE_INPUT, \
         MAX_VOCAB_SIZE_OUTPUT,\
-        top_k
+        top_k, \
+        which_implementation
 
     #All File Path
-    train_dataset_file_path = 'dataset/train_dataset'
+    train_dataset_file_path = './dataset/train_dataset'
 
-    test_dataset_file_path = 'dataset/test_dataset/2.txt'
+    test_dataset_file_path = './dataset/test_dataset/1.txt'
 
-    input_vocab_file_path = 'vocabulary/input.vocab'
+    input_vocab_file_path = './vocabulary/input.vocab'
 
-    output_vocab_file_path = 'vocabulary/output.vocab'
+    output_vocab_file_path = './vocabulary/output.vocab'
+
+    checkpoints_folder_path = './training_checkpoints'
 
     model_file_path = "model.h5"
 
-    test_dataset_output_file_path = "results/netbeans_bilstm_c3_attn_bs_top_10_cross_2.txt"
+    test_dataset_output_file_path = "results/eclipse_bilstm_c3_attn_bs_top_10_cross_1.txt"
 
 
     #Vocabualry and COrpus related parameter
@@ -64,7 +68,7 @@ def init():
 
 
     #Training related parameter
-    learning_Rate = 0.01
+    learning_Rate = 0.00001
 
     hidden_size = 512
 
@@ -72,13 +76,13 @@ def init():
 
     batch_size = 64
 
-    epochs = 10
+    epochs = 100
 
     validation_split = 0.1
 
-    dropout = 0.25
+    dropout = 0.5
 
-    reccurent_dropout = 0.25
+    reccurent_dropout = 0.5
 
     loss = 'categorical_crossentropy'
 
@@ -87,4 +91,7 @@ def init():
     metrics = ['accuracy']
 
     top_k = 10
+
+    #Options: keras, tf_estimator
+    which_implementation = 'tf_estimator'
 

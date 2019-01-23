@@ -1,6 +1,6 @@
 import config,CreateDataset,keras,os,Evaluation, numpy as np, tensorflow as tf
 from DataPreprocessing import Vocab,Lang
-from NNStructure import trainModel,encoder,decoder,trainNoTeacher,trainModelRNN,trainModelLSTM,encoderRNN,decoderRNN,encoderLSTM,decoderLSTM
+from KerasNNStructure import trainModel,encoder,decoder,trainNoTeacher,trainModelRNN,trainModelLSTM,encoderRNN,decoderRNN,encoderLSTM,decoderLSTM
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 from operator import itemgetter
 
@@ -24,12 +24,14 @@ class Training:
                                                                          datasetfilepath=config.train_dataset_file_path)
         #when path of training dataset is a folder
         elif(os.path.isdir(config.train_dataset_file_path)):
-            for path in os.listdir(config.train_dataset_file_path):
+            for each_path in os.listdir(config.train_dataset_file_path):
                 #print(os.path.join(config.train_dataset_file_path,path))
+                if each_path.__contains__('readme.md'):
+                    continue
                 temp_input_lang, temp_output_lang, temp_train_pairs = dictonary.prepareData(lang1='Context',
                                                                                             lang2='Label',
                                                                                             reverse=True,
-                                                                                            datasetfilepath=os.path.join(config.train_dataset_file_path,path))
+                                                                                            datasetfilepath=os.path.join(config.train_dataset_file_path,each_path))
                 train_pairs.extend(temp_train_pairs)
                 input_lang.appendLang(temp_input_lang)
                 output_lang.appendLang(temp_output_lang)
@@ -181,6 +183,7 @@ class Testing:
 
         train_model.load_weights(config.model_file_path)
 
+
         #Encoder Model
         test_encoder = encoder(MAX_LENGTH_Input=config.MAX_LENGTH_Input,
                                vocab_size_input=self.input_vocab_size,
@@ -211,12 +214,12 @@ class Testing:
 
         test_encoder.get_layer('Encoder_Layer').set_weights(encoder_layer_weigths)
 
+        #print(test_encoder.get_layer('Encoder_Layer').get_weights())
+
 
         test_encoder.compile(loss= config.loss,
                       optimizer= config.optimizer,
                       metrics= config.metrics)
-
-
 
         #test_decoder.summary()
 
@@ -251,7 +254,6 @@ class Testing:
                                                                                      MAX_LENGTH_Output=config.MAX_LENGTH_Output,
                                                                                      tar_vocab=self.output_vocab_size)
         keras.backend.get_session().run(tf.global_variables_initializer())
-
         h =-1;
         counter_case=0
         f = open(config.test_dataset_output_file_path, "w")
@@ -263,13 +265,12 @@ class Testing:
             var = self.getIndex(decoder_output,h)
             encoder_output = test_encoder.predict(x=x_test)
             nitens = test_pairs[h]
-
             # Generate empty target sequence of length 1.
             target_seq = np.zeros((1, 1, self.output_vocab_size))
             # Populate the first character of target sequence with the start character.
             target_seq[0, 0, config.SOS_token] = 1
 
-            predicted_output = test_decoder.predict(x=[encoder_output, target_seq])
+            predicted_output = test_decoder.predict(x=target_seq+encoder_output)
             sample_token_index = self.getTop_K(predicted_output, config.top_k, 1)
 
             predicted_seq = []
@@ -280,7 +281,6 @@ class Testing:
                     flag = 1
                 else:
                     predicted_seq.append(([each_sample[0]], each_sample[1]))
-                # print(Dict.getindex2word(Dict,self.output_lang,each_sample[0]))
 
             no_dead_sequence = 0
             while no_dead_sequence < config.top_k:
@@ -379,7 +379,7 @@ class Testing:
         returnTop_K_Pair = []
 
         for i in range(top_k):
-            while "NA" in Vocab.getindex2word(Vocab, self.output_lang, np.argmax(predicted_output[0, -1, :])) or np.argmax(predicted_output[0, -1, :]) == 0:
+            while "NA" in Vocab.getindex2word(Vocab, lang = self.output_lang,index =  np.argmax(predicted_output[0, -1, :])) or np.argmax(predicted_output[0, -1, :]) == 0:
                 sampled_token_index = np.argmax(predicted_output[0, -1, :])
                 predicted_output[0, 0, sampled_token_index] = 0;
 
@@ -392,6 +392,7 @@ class Testing:
 
 
     def getIndex(self,array,sample_no):
+        print(array.shape,sample_no)
         return np.argmax(array[sample_no,0,:])
 
 

@@ -48,12 +48,10 @@ def createOneVector(sequence,MAX_LENGTH,vocab_size):
 
 
 def datasetCreation(n_iters,pairs,input_lang,output_lang, MAX_LENGTH_Input,MAX_LENGTH_Output,tar_vocab):
-    #print("Creating Corpus.....")
     training_pairs = []
     for i in range(n_iters):
         training_pairs.append(tensorsFromPair(pairs[i], input_lang, output_lang))
 
-    #print("Creating One hot vector for decoder input...")
     encoder_input = []
     decoder_input = []
     decoder_output = []
@@ -63,45 +61,45 @@ def datasetCreation(n_iters,pairs,input_lang,output_lang, MAX_LENGTH_Input,MAX_L
         decoder_input.append(training_pair[1])
         decoder_output.append(training_pair[2])
 
-    #print("Padding the encoder input, decoder input and decoder output.......")
     X_Input = sequence.pad_sequences(encoder_input, maxlen=MAX_LENGTH_Input, padding='post', truncating='post')
     Y_Input = sequence.pad_sequences(decoder_input, maxlen=MAX_LENGTH_Output,padding='post', truncating='post')
     Y_Output = sequence.pad_sequences(decoder_output, maxlen=MAX_LENGTH_Output, padding='post', truncating='post')
 
     sess = tf.InteractiveSession()
 
-    #print("Creating One Hot Vector for decoder input and decoder output.......")
-    Target_Input = np.empty(shape=(len(pairs), MAX_LENGTH_Output, tar_vocab), dtype=np.int8)
-    Target_Output = np.empty(shape=(len(pairs), MAX_LENGTH_Output, tar_vocab), dtype=np.int8)
+    if config.which_implementation == 'keras':
+        #print("Creating One Hot Vector for decoder input and decoder output.......")
+        Target_Input = np.empty(shape=(len(pairs), MAX_LENGTH_Output, tar_vocab), dtype=np.int8)
+        Target_Output = np.empty(shape=(len(pairs), MAX_LENGTH_Output, tar_vocab), dtype=np.int8)
 
-    #print("Populating decoder input vector.........")
-    index = 0
-    for each_label in Y_Input:
-        if len(each_label) > MAX_LENGTH_Output:
-            del each_label[MAX_LENGTH_Output:]
+        #print("Populating decoder input vector.........")
+        index = 0
+        for each_label in Y_Input:
+            if len(each_label) > MAX_LENGTH_Output:
+                del each_label[MAX_LENGTH_Output:]
 
-        a = np.zeros(shape=(MAX_LENGTH_Output, tar_vocab))
-        i = 0
-        for each_number in each_label:
-            a[i, each_number] = 1
-            i = i + 1
+            a = np.zeros(shape=(MAX_LENGTH_Output, tar_vocab))
+            i = 0
+            for each_number in each_label:
+                a[i, each_number] = 1
+                i = i + 1
 
-        Target_Input[index] = a
-        index = index + 1
+            Target_Input[index] = a
+            index = index + 1
 
-    #print("Populating decoder output vector.........")
-    index = 0
-    for each_label in Y_Output:
-        if len(each_label) > MAX_LENGTH_Output:
-            del each_label[MAX_LENGTH_Output:]
+        #print("Populating decoder output vector.........")
+        index = 0
+        for each_label in Y_Output:
+            if len(each_label) > MAX_LENGTH_Output:
+                del each_label[MAX_LENGTH_Output:]
 
-        a = np.zeros(shape=(MAX_LENGTH_Output,tar_vocab))
-        i = 0
-        for each_number in each_label:
-            a[i,each_number] = 1
-            i = i+1
-        Target_Output[index] = a
-        index = index+1
-
-    #print("Data Preprocessing Done")
-    return X_Input,Target_Input,Target_Output
+            a = np.zeros(shape=(MAX_LENGTH_Output,tar_vocab))
+            i = 0
+            for each_number in each_label:
+                a[i,each_number] = 1
+                i = i+1
+            Target_Output[index] = a
+            index = index+1
+        return X_Input,Target_Input,Target_Output
+    else:
+        return X_Input,Y_Input,Y_Output
