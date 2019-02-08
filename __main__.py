@@ -1,4 +1,5 @@
-import config
+import config,os
+import tensorflow as tf
 from pathlib import Path
 from DataPreprocessing import Vocab,Lang
 from TFEstimatorOperation import TFTraining,TFOneTesting,TFTesting
@@ -6,6 +7,10 @@ from KerasOperation import Training,Testing,OneTesting
 
 
 config.init()
+
+#GPU ID for the machine wher GPU is available.
+if tf.test.is_gpu_available():
+    os.environ["CUDA_VISIBLE_DEVICES"] = config.gpu_id
 
 input_vocab_size = config.MAX_VOCAB_SIZE_INPUT+ 3
 output_vocab_size = config.MAX_VOCAB_SIZE_OUTPUT+ 3

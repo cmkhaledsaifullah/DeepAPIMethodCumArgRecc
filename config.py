@@ -30,7 +30,8 @@ def init():
         MAX_VOCAB_SIZE_INPUT, \
         MAX_VOCAB_SIZE_OUTPUT,\
         top_k, \
-        which_implementation
+        which_implementation, \
+        gpu_id
 
     #All File Path
     root_folder = '/home/khaledkucse/Project/backup'
@@ -92,4 +93,7 @@ def init():
 
     #Options: keras, tf_estimator
     which_implementation = 'tf_estimator'
+
+    #GPU_ID when GPU is available:
+    gpu_id = "1"
 
