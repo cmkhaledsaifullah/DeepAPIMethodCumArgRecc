@@ -19,6 +19,7 @@ javareccomender: An optional java based reccomender is developed. deeplearning4j
 
 * [JavaParser](http://javaparser.org/) - Java based parsing library
 * [Keras](https://keras.io/) - Python library based on tensorflow for deep learning task
+* [TF Estimator](https://www.tensorflow.org/guide/estimators) - Python library based on tensorflow for deep learning task
 * [DeepLearning4j](https://deeplearning4j.org/) - Java framework for deep learning
 
 ## Authors
