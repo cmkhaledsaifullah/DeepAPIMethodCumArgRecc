@@ -16,14 +16,19 @@ The project contains several python scripts by which the DAMCA Recommender tool 
 * CreateDataset.py: The script is responsible to create dataset for the learning/testing processes.
 * DataPreprocessing.py: It process the input data and help the CreateDataset.py script to process the input data.
 * Evaluation.py: The scripts execute the evaluation mechanisms(Accuracy, Recall, BLUE Score, MRR) on results of DAMCA Recommender.
-* NNStructure.py: The scripts contains the code for different neural network structure.
-* Operation.py: From __main__.py scripts, different methods of Operation.py is called. And those methods executes all functionalities with help of other scripts.
+* KerasNNStructure.py: The scripts contains the code for different neural network structure designed using Keras library.
+* KerasOperation.py: From __main__.py scripts, different methods of KerasOperation.py is called when "which_implementation" of config.py is defined as "keras" . And those methods executes all functionalities with help of other scripts.
+* TFEstimatorNNStructure.py: The scripts contains the code for different neural network structure designed using Tennsorflow Estimator library.
+* TFEstimatorOperation.py: When global variable, "which_implementation" is defined as "tfestimator" then training and testing method defined in this scripts are called by __main__.py
+* TFEstimatorPostProcess.py: Data post processing scripts for TF Estimator library.
 
 There are some folders that contains specific elements for the program.
-* /dataset: It contains the training and testing data
-* /evaluation: It contains the evaluation reports after testing
-* /results: It contains the raw results for each test case. Evaluation.py uses these data to get the evaluation metrics.
-* /vocabulary: It has two file: input.vocab(vocabulary for input sequence) and output.vocab(vocabulary for output sequences)
+* /damca_dataset: It contains the training and testing data
+* /damca_evaluation: It contains the evaluation reports after testing
+* /damca_results: It contains the raw results for each test case. Evaluation.py uses these data to get the evaluation metrics.
+* /damca_vocabulary: It has two file: input.vocab(vocabulary for input sequence) and output.vocab(vocabulary for output sequences)
+* /damca_training_checkpoints: training checkpoints are stored in this folder when code with tfestimator is executed.
+* /damca_models: training model created by keras library is stored in the directory.
 
 ### Requirements:
 Following packages need to be installed in order to run the program:
@@ -56,20 +61,20 @@ pip3
     1. Download [dataset](https://drive.google.com/open?id=1tRNDwVKYx1cN8R8A0_JXG8bMrz7zGQTn) or create dataset by your own using DAMCA Context Collector. Each sentence need to maintain following structure:<br>
         fileLocation startLOC : endLOC +++$+++ methodCallSequence +++$+++ recieverVariableFQN 
         +++$+++ context
-    2. Put the files in /dataset/train_dataset/ folder.
+    2. Put the files in /damca_dataset/train_dataset/ folder.
     3. Check and edit(if needed) global variables in config.py and run __main__.py. Write 'train' in the first interface.
     4. The program will train from the input data and will generate a model file, input and output vocabulary.
 4. Test:
     1. Download the [Model file](https://drive.google.com/open?id=1sR9tlmABaS36ns16A3T3kk0LSJW5pUFy), [input vocabulary](https://drive.google.com/open?id=1sG98mUD5fFXU3_LNmxCJb8hxvkFUEAti) and [output vocabulary](https://drive.google.com/open?id=1pxeZfOjkWPv30jNhtck1Frz0Nwq6DwOf)
-    2. Put input and output vocabulary in /vocabulary folder and model file in the project folder. 
+    2. Put input and output vocabulary in /damca_vocabulary folder and model file in the project folder. 
     3. Download [dataset](https://drive.google.com/open?id=1tRNDwVKYx1cN8R8A0_JXG8bMrz7zGQTn) or create dataset by your own using DAMCA Context Collector. 
-    4. Put the files in /dataset/test_dataset/ folder.
+    4. Put the files in /damca_dataset/test_dataset/ folder.
     5. Check and edit(if needed) global variables in config.py and run __main__.py. Write 'test' in the first interface.
     6. The program will test from the input data and will generate a results in /result folder.
 5. Train-test:
     1. Same as Training and after training it will test using the file assigned as a path in config.py as 'test_dataset_file_path'.
 6. Infer:
-    1. All process is same as Test except you need not download and put dataset in /dataset/test_dataset folder.
+    1. All process is same as Test except you need not download and put dataset in /damca_dataset/test_dataset folder.
     2. After writing 'infer' at the first interface, it will ask to give whole test case in a single line. Paste the following line as a sample input:
     ```/home/local/SAIL/parvezku01/research/parameter_recommendation/repository/eclipse-sourceBuild-srcIncluded-3.7.2/src/plugins/org.eclipse.jdt.ui/ui/org/eclipse/jdt/internal/ui/actions/SelectAllAction.java 14 : 69 +++$+++ getExpanded:org.eclipse.swt.widgets.TreeItem +++$+++ org.eclipse.swt.widgets.TreeItem +++$+++ getData  if if add getData if collectExpandedAndVisible int getData if List for SelectAllAction TreeItem Action```
     3. It will show the top-k suggestion in the console.
@@ -78,6 +83,7 @@ pip3
 ## Built With
 
 * [Keras](https://keras.io/) - Python library built on top of tensorflow for deep neural network.
+* [TF Estimatot](https://www.tensorflow.org/guide/estimators) - Python library built on top of tensorflow for deep neural network.
 
 ## Author
 

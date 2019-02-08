@@ -1,6 +1,3 @@
-import torch
-
-
 def init():
     global train_dataset_file_path, \
         test_dataset_file_path,\
@@ -36,19 +33,20 @@ def init():
         which_implementation
 
     #All File Path
-    train_dataset_file_path = './dataset/train_dataset'
+    root_folder = '/home/khaledkucse/Project/backup'
+    train_dataset_file_path = root_folder+'/damca_dataset/train_dataset'
 
-    test_dataset_file_path = './dataset/test_dataset/1.txt'
+    test_dataset_file_path = root_folder+'/damca_dataset/test_dataset/1.txt'
 
-    input_vocab_file_path = './vocabulary/input.vocab'
+    input_vocab_file_path = root_folder+'/damca_vocabulary/input.vocab'
 
-    output_vocab_file_path = './vocabulary/output.vocab'
+    output_vocab_file_path = root_folder+'/damca_vocabulary/output.vocab'
 
-    checkpoints_folder_path = './training_checkpoints'
+    checkpoints_folder_path = root_folder+'/damca_training_checkpoints'
 
-    model_file_path = "model.h5"
+    model_file_path = root_folder+"/damca_model/model.h5"
 
-    test_dataset_output_file_path = "results/eclipse_bilstm_c3_attn_bs_top_10_cross_1.txt"
+    test_dataset_output_file_path = root_folder+"/damca_result/eclipse_bilstm_c3_attn_bs_top_10_cross_1.txt"
 
 
     #Vocabualry and COrpus related parameter

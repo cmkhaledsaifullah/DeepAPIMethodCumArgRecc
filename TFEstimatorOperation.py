@@ -27,28 +27,28 @@ class TFTraining:
     def train(self,is_save_vocabulary):
         '''
         Step 1: Preprocess the raw data:
-        1.1 create dictonary/vocabulary from the text, make two language one for the input(context,previous code tokens) and other for the output(method call sequence)
-        1.2 Resize the dictonary/vocabulary based on the frequency of the word
+        1.1 create dictonary/damca_vocabulary from the text, make two language one for the input(context,previous code tokens) and other for the output(method call sequence)
+        1.2 Resize the dictonary/damca_vocabulary based on the frequency of the word
         1.3 Convert textual sequence into the numeric tensors based on the id of the the word in the dictonary
 
-        Step 2: Define Buffer size and create batched dataset , loss function and checkpoints
+        Step 2: Define Buffer size and create batched damca_dataset , loss function and checkpoints
 
         Step 3: Training uptu the number of epoch
 
 
-        :param is_save_vocabulary: Boolean value representing whether the user wants to save vocabulary/dictonary
+        :param is_save_vocabulary: Boolean value representing whether the user wants to save damca_vocabulary/dictonary
         :return:
         '''
 
         print('Loading Training data....')
         train_pairs=[]
-        #when path of training dataset is a file
+        #when path of training damca_dataset is a file
         if(os.path.isfile(config.train_dataset_file_path)):
             self.input_lang, self.output_lang, train_pairs = self.dictonary.prepareData(lang1='Context',
                                                                          lang2='Label',
                                                                          reverse=True,
                                                                          datasetfilepath=config.train_dataset_file_path)
-        #when path of training dataset is a folder
+        #when path of training damca_dataset is a folder
         elif(os.path.isdir(config.train_dataset_file_path)):
             for each_path in os.listdir(config.train_dataset_file_path):
                 #print(os.path.join(config.train_dataset_file_path,path))
@@ -87,7 +87,7 @@ class TFTraining:
                                                                                      tar_vocab=self.output_vocab_size)
 
 
-        #Define Buffer size. And then shuffle them based on number of batch(N_BATCH) and create batched dataset.
+        #Define Buffer size. And then shuffle them based on number of batch(N_BATCH) and create batched damca_dataset.
         BUFFER_SIZE = len(encoder_input)
         N_BATCH = BUFFER_SIZE // config.batch_size
         dataset = tf.data.Dataset.from_tensor_slices((encoder_input, decoder_output)).shuffle(BUFFER_SIZE)
@@ -167,7 +167,7 @@ class TFTesting:
 
     def test(self):
         def evaluate(encoder, decoder):
-            print('Loading test dataset from',config.test_dataset_file_path)
+            print('Loading test damca_dataset from',config.test_dataset_file_path)
             dictonary = Vocab()
             _, _, test_pairs = dictonary.prepareData(lang1='Context',
                                                      lang2='Label',

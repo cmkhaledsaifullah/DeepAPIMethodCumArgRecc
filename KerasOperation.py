@@ -16,13 +16,13 @@ class Training:
         output_lang = Lang()
         train_pairs=[]
         dictonary = Vocab()
-        #when path of training dataset is a file
+        #when path of training damca_dataset is a file
         if(os.path.isfile(config.train_dataset_file_path)):
             input_lang, output_lang, train_pairs = dictonary.prepareData(lang1='Context',
                                                                          lang2='Label',
                                                                          reverse=True,
                                                                          datasetfilepath=config.train_dataset_file_path)
-        #when path of training dataset is a folder
+        #when path of training damca_dataset is a folder
         elif(os.path.isdir(config.train_dataset_file_path)):
             for each_path in os.listdir(config.train_dataset_file_path):
                 #print(os.path.join(config.train_dataset_file_path,path))

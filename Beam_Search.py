@@ -6,7 +6,7 @@ def beamsearch(k=config.top_k, maxsample=config.top_k, use_unk=False, eos=config
     """return k samples (beams) and their NLL scores, each sample is a sequence of labels,
     all samples starts with an `empty` label and end with `eos` or truncated to length of `maxsample`.
     You need to supply `predict` which returns the label probability of each sample.
-    `use_unk` allow usage of `oov` (out-of-vocabulary) label in samples
+    `use_unk` allow usage of `oov` (out-of-damca_vocabulary) label in samples
     """
 
     dead_k = 0  # samples that reached eos

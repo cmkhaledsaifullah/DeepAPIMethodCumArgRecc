@@ -36,7 +36,7 @@ if var == 'train':
         training = TFTraining(input_vocab_size = input_vocab_size,
                               output_vocab_size = output_vocab_size)
 
-    vocab_check = input("Are you going to Save the vocabulary(y/n): ")
+    vocab_check = input("Are you going to Save the damca_vocabulary(y/n): ")
 
     if 'y' in vocab_check:
         training.train(is_save_vocabulary=True)
