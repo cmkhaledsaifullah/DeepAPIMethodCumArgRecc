@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="151c02a3-ead8-4e1f-ab6c-1ecaa3397bfb" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/TFEstimatorNNStructure.py" beforeDir="false" afterPath="$PROJECT_DIR$/TFEstimatorNNStructure.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -30,11 +30,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/TFEstimatorNNStructure.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="684">
-              <caret line="116" column="26" selection-start-line="116" selection-start-column="26" selection-end-line="116" selection-end-column="26" />
+            <state relative-caret-position="789">
+              <caret line="133" column="56" lean-forward="true" selection-start-line="57" selection-end-line="133" selection-end-column="56" />
             </state>
           </provider>
         </entry>
@@ -57,9 +57,13 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/requirements.txt">
-          <provider selected="true" editor-type-id="text-editor" />
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="18">
+              <caret line="1" column="16" lean-forward="true" selection-start-line="1" selection-start-column="16" selection-end-line="1" selection-end-column="16" />
+            </state>
+          </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
@@ -133,6 +137,7 @@
         <option value="$PROJECT_DIR$/damca_model/readme.md" />
         <option value="$PROJECT_DIR$/README.md" />
         <option value="$PROJECT_DIR$/TFEstimatorNNStructure.py" />
+        <option value="$PROJECT_DIR$/requirements.txt" />
       </list>
     </option>
   </component>
@@ -255,12 +260,12 @@
       <workItem from="1546539824659" duration="41694000" />
       <workItem from="1547240226230" duration="29857000" />
       <workItem from="1548181656325" duration="17691000" />
-      <workItem from="1549587896872" duration="5180000" />
+      <workItem from="1549587896872" duration="5988000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="96706000" />
+    <option name="totallyTimeSpent" value="97514000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="52" y="34" width="1868" height="1046" extended-state="6" />
@@ -622,9 +627,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/requirements.txt">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
     <entry file="file://$PROJECT_DIR$/__main__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="177">
@@ -661,8 +663,15 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/TFEstimatorNNStructure.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="684">
-          <caret line="116" column="26" selection-start-line="116" selection-start-column="26" selection-end-line="116" selection-end-column="26" />
+        <state relative-caret-position="789">
+          <caret line="133" column="56" lean-forward="true" selection-start-line="57" selection-end-line="133" selection-end-column="56" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/requirements.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="18">
+          <caret line="1" column="16" lean-forward="true" selection-start-line="1" selection-start-column="16" selection-end-line="1" selection-end-column="16" />
         </state>
       </provider>
     </entry>
