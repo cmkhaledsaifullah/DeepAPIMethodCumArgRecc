@@ -1,5 +1,5 @@
 # DAMCA Context Colelctor
-DAMCA Context Collector branch is a java program coded using symbol solver api of java parser system. 
+DAMCA Context Collector(DCC) branch is a java program coded using symbol solver api of java parser system. 
 The code generate AST information for DAMCA, SLP and SLAMC systems for any java project.
 
 
@@ -28,7 +28,7 @@ change the global variables
 Most important is:
 private static final String ROOT_FOLDER = "path/to/your/project/folder";
 ```
-Besides to enble the data collection for any system(DAMCA, SLP or SLAMC) yo need to triiger following parameters:
+Besides to enble the data collection for any system(DAMCA, SLP or SLAMC) yo need to trigger following parameters:
  ```
  public static final Boolean IS_DAMCA_COLLECT = Boolean.FALSE;
  public static final Boolean IS_SLP_COLLECT = Boolean.FALSE;
@@ -36,9 +36,9 @@ Besides to enble the data collection for any system(DAMCA, SLP or SLAMC) yo need
  ```
 
 Step 2: 
-Delete(or store at another place) the log.txt file, all files in models, damca_dataset,slp_dataset and slamc_dataset files.
+Delete(or store at another place) the dcc_log.txt file, all files in dcc_models, dcc_damca_dataset,dcc_slp_dataset and dcc_slamc_dataset files.
 
-Put the java projetects you want to parse at subject_systems folder. It is reccomended to put the whole projects in a folder.
+Put the java projects you want to parse at dcc_subject_systems folder. It is reccomended to put the whole projects in a folder.
 You need not built the project.
 
 Step 3: 
