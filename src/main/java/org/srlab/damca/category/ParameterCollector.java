@@ -53,7 +53,7 @@ public class ParameterCollector {
 	}
 	
 	public static void main(String args[]) {
-		ParameterCollector parameterCollector = new ParameterCollector(Config.TEST_REPOSITORY_PATH);
+		ParameterCollector parameterCollector = new ParameterCollector(Config.OUTPUT_PATH);
 		//parameterCollector.run();
 	}
 }

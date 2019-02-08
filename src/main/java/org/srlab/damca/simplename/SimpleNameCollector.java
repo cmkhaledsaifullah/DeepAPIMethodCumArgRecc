@@ -42,7 +42,7 @@ public class SimpleNameCollector extends VoidVisitorAdapter<Void> {
 
 	private List<VariableEntity> localVariableDeclarationEntities;
 	private List<VariableEntity> localVariableDeclarationOrAssignedEntities;
-	
+
 	private List<VariableEntity> fieldVariableEntities;
 	private List<VariableEntity> inheritedVariableEntities;
 	private List<VariableEntity> parameterVariableEntities;
@@ -138,7 +138,7 @@ public class SimpleNameCollector extends VoidVisitorAdapter<Void> {
 	public void collectLocalVariables() {
 		// collect variables that appear in the method body
 		this.methodDeclaration.accept(this, null);
-		
+
 		Collections.reverse(this.localVariableDeclarationEntities);
 		Collections.reverse(this.localVariableDeclarationOrAssignedEntities);
 	}

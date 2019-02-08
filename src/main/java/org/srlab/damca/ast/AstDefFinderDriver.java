@@ -61,7 +61,7 @@ public class AstDefFinderDriver {
         logbw.write("=============================================================");
         logbw.write("Running ASTDefFinder");
         logbw.newLine();
-		AstDefFinderDriver astDefFinderDriver = new AstDefFinderDriver(Config.TEST_REPOSITORY_PATH);
+		AstDefFinderDriver astDefFinderDriver = new AstDefFinderDriver(Config.OUTPUT_PATH);
 		astDefFinderDriver.run(logbw);
 	}
 }
