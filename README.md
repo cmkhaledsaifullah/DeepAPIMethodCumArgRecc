@@ -51,7 +51,7 @@ Based on the controlling parameters(IS_DAMCA_COLLECT,IS_SLP_COLLECT,IS_SLAMC_COL
 
 ## Issues:
 
-If Memory Limit Exception occurs it means your cache is full with the previous data. One solution can be remove the projects that are parsed already from the subject_systems folder and rerun the ModelEntryCollectionDriver.java file. Or you can run the project in a computer with more memory.
+If Memory Limit Exception occurs it means your cache is full with the previous data. One solution can be remove the projects that are parsed already from the dcc_subject_systems folder and rerun the ModelEntryCollectionDriver.java file. Or you can run the project in a computer with more memory.
 
 For other issue please create an issue. We will look forward to solve it.
 
