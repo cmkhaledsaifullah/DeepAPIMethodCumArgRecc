@@ -5,16 +5,12 @@ config.init()
 def BiLSTM(units,MAX_LENGTH_Input,embedding_width):
     if tf.test.is_gpu_available():
         return tf.keras.layers.Bidirectional(tf.keras.layers.CuDNNLSTM(units,
-                                                                        dropout=config.dropout,
-                                                                        recurrent_dropout=config.reccurent_dropout,
                                                                         return_sequences=True,
                                                                         return_state=True),
                                              input_shape=(MAX_LENGTH_Input, embedding_width)
                                              )
     else:
         return tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(units,
-                                                                        dropout=config.dropout,
-                                                                        recurrent_dropout=config.reccurent_dropout,
                                                                         return_sequences=True,
                                                                         return_state=True),
                                              input_shape=(MAX_LENGTH_Input, embedding_width)
@@ -43,10 +39,12 @@ class Encoder(tf.keras.Model):
         self.max_length = max_length
         self.enc_units = enc_units
         self.embedding = tf.keras.layers.Embedding(vocab_size, embedding_dim)
+        self.dropout = tf.keras.layers.Dropout(config.dropout)
         self.BiLSTM = BiLSTM(self.enc_units,max_length,embedding_dim)
 
     def call(self, x, hidden):
         x = self.embedding(x)
+        x = self.dropout(x)
         output,forward_h, forward_c, backward_h, backward_c = self.BiLSTM(x)
         state_h = tf.keras.layers.Concatenate()([forward_h, backward_h])
         state_c = tf.keras.layers.Concatenate()([forward_c, backward_c])
@@ -64,6 +62,7 @@ class Decoder(tf.keras.Model):
         self.max_length = max_length
         self.dec_units = dec_units
         self.embedding = tf.keras.layers.Embedding(vocab_size, embedding_dim)
+        self.dropout = tf.keras.layers.Dropout(config.dropout)
         self.BiLSTM = BiLSTM(self.dec_units,max_length,embedding_dim)
         self.fc = tf.keras.layers.Dense(vocab_size,activation="softmax")
 
@@ -114,6 +113,8 @@ class Decoder(tf.keras.Model):
         # x = tf.cast(x, dtype= tf.float32)
         # x shape after concatenation == (batch_size, 1, embedding_dim + hidden_size*2)
         x = tf.concat([tf.expand_dims(context_vector, 1), x], axis=-1)
+
+        x = self.dropout(x)
 
         # passing the concatenated vector to the GRU
         output, forward_h, forward_c, backward_h, backward_c = self.BiLSTM(x)
