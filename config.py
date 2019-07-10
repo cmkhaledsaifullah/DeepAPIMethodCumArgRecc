@@ -9,7 +9,8 @@ def init():
         MAX_LENGTH_Output, \
         SOS_token,\
         EOS_token, \
-        UNK_token,\
+        UNK_token, \
+        PADDED_Token,\
         teacher_forcing_ratio,\
         learning_Rate,\
         hidden_size,\
@@ -21,7 +22,8 @@ def init():
         validation_split,\
         n_layers,\
         dropout, \
-        reccurent_dropout,\
+        l1_regularization,\
+        l2_regularization,\
         loss,\
         optimizer,\
         metrics,\
@@ -34,20 +36,20 @@ def init():
         gpu_id
 
     #All File Path
-    root_folder = '/home/khaledkucse/Project/backup'
-    train_dataset_file_path = root_folder+'/damca_dataset/train_dataset'
+    root_folder = '/home/khaledkucse/Project/backup/damca'
+    train_dataset_file_path = root_folder+'/dataset/train_dataset'
 
-    test_dataset_file_path = root_folder+'/damca_dataset/test_dataset/1.txt'
+    test_dataset_file_path = root_folder+'/dataset/test_dataset/1.txt'
 
-    input_vocab_file_path = root_folder+'/damca_vocabulary/input.vocab'
+    input_vocab_file_path = root_folder+'/vocabulary/input.vocab'
 
-    output_vocab_file_path = root_folder+'/damca_vocabulary/output.vocab'
+    output_vocab_file_path = root_folder+'/vocabulary/output.vocab'
 
-    checkpoints_folder_path = root_folder+'/damca_training_checkpoints'
+    checkpoints_folder_path = root_folder+'/training_checkpoints'
 
-    model_file_path = root_folder+"/damca_model/model.h5"
+    model_file_path = root_folder+"/model/model.h5"
 
-    test_dataset_output_file_path = root_folder+"/damca_result/eclipse_bilstm_c3_attn_bs_top_10_cross_1.txt"
+    test_dataset_output_file_path = root_folder+"/result/eclipse_bilstm_c3_attn_bs_top_10_cross_1.txt"
 
 
     #Vocabualry and COrpus related parameter
@@ -59,19 +61,21 @@ def init():
 
     MAX_VOCAB_SIZE_OUTPUT = 5000
 
-    UNK_token = 0
+    UNK_token = 1
 
-    SOS_token = 1
+    SOS_token = 2
 
-    EOS_token = 2
+    EOS_token = 3
+
+    PADDED_Token = 0
 
 
     #Training related parameter
-    learning_Rate = 0.00001
+    learning_Rate = 0.01
 
-    hidden_size = 512
+    hidden_size = 256
 
-    embedding_width = 264
+    embedding_width = 128
 
     batch_size = 64
 
@@ -79,9 +83,11 @@ def init():
 
     validation_split = 0.1
 
-    dropout = 0.5
+    dropout = 0.2
 
-    reccurent_dropout = 0.5
+    l1_regularization = 0.0001
+
+    l2_regularization = 0.0001
 
     loss = 'categorical_crossentropy'
 

@@ -2,8 +2,9 @@ import config,os
 import tensorflow as tf
 from pathlib import Path
 from DataPreprocessing import Vocab,Lang
-from TFEstimatorOperation import TFTraining,TFOneTesting,TFTesting
+from TFEstimatorOperation import TFEstimatorTraining,TFEstimatorOneTesting,TFEstimatorTesting
 from KerasOperation import Training,Testing,OneTesting
+from TFOperation import TFTraining,TFTesting,TFOneTesting
 
 
 config.init()
@@ -12,8 +13,8 @@ config.init()
 if tf.test.is_gpu_available():
     os.environ["CUDA_VISIBLE_DEVICES"] = config.gpu_id
 
-input_vocab_size = config.MAX_VOCAB_SIZE_INPUT+ 3
-output_vocab_size = config.MAX_VOCAB_SIZE_OUTPUT+ 3
+input_vocab_size = config.MAX_VOCAB_SIZE_INPUT+ config.EOS_token+1
+output_vocab_size = config.MAX_VOCAB_SIZE_OUTPUT+ config.EOS_token+1
 
 input_lang = Lang()
 output_lang = Lang()
@@ -38,7 +39,7 @@ if var == 'train':
 
     # Tensorflow Estimator Seq2Seq Implementation
     elif config.which_implementation == 'tf_estimator':
-        training = TFTraining(input_vocab_size = input_vocab_size,
+        training = TFEstimatorTraining(input_vocab_size = input_vocab_size,
                               output_vocab_size = output_vocab_size)
 
     vocab_check = input("Are you going to Save the damca_vocabulary(y/n): ")
@@ -83,7 +84,7 @@ elif var == 'test':
     # Tensorflow Estimator Seq2Seq Implementation
     if config.which_implementation == 'tf_estimator':
         print("Implementing Tensorflow Estimator Version.....")
-        testing = TFTesting(input_vocab_size = input_vocab_size,
+        testing = TFEstimatorTesting(input_vocab_size = input_vocab_size,
                             output_vocab_size = output_vocab_size,
                             input_lang = input_lang,
                             output_lang = output_lang)
@@ -131,7 +132,7 @@ elif var == 'infer':
         seq_input = input("Please enter the input in the following format \n"
                               " ID +++$+++ <label Sequence> +++$+++ <reciever type> +++$+++ <context sequence> \n")
 
-        testing = TFOneTesting(input_vocab_size=input_vocab_size,
+        testing = TFEstimatorOneTesting(input_vocab_size=input_vocab_size,
                                 output_vocab_size=output_vocab_size,
                                 input_lang=input_lang,
                                 output_lang=output_lang,

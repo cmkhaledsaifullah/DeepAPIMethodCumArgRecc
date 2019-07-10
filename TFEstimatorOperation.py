@@ -4,7 +4,7 @@ from TFEstimatorNNStructure import Encoder,Decoder
 from TFDataPostProcess import DataPostProcessing
 import matplotlib.pyplot as plt
 
-class TFTraining:
+class TFEstimatorTraining:
 
     def __init__(self, input_vocab_size,output_vocab_size):
 
@@ -13,14 +13,14 @@ class TFTraining:
         #Data Preprocessing
         self.input_vocab_size = input_vocab_size
         self.output_vocab_size = output_vocab_size
-        self.input_lang = Lang()
-        self.output_lang = Lang()
+        self.input_lang = Lang('Context')
+        self.output_lang = Lang('Label')
         self.dictonary = Vocab()
 
         # Neural Networks model and optimizer
         self.encoder = Encoder(self.input_vocab_size, config.MAX_LENGTH_Input, config.embedding_width, config.hidden_size, config.batch_size)
         self.decoder = Decoder(self.output_vocab_size, config.MAX_LENGTH_Output,config.embedding_width, config.hidden_size, config.batch_size)
-        self.optimizer = tf.train.AdadeltaOptimizer(config.learning_Rate)
+        self.optimizer = tf.train.AdamOptimizer(config.learning_Rate)
 
         config.init()
 
@@ -45,9 +45,8 @@ class TFTraining:
         #when path of training damca_dataset is a file
         if(os.path.isfile(config.train_dataset_file_path)):
             self.input_lang, self.output_lang, train_pairs = self.dictonary.prepareData(lang1='Context',
-                                                                         lang2='Label',
-                                                                         reverse=True,
-                                                                         datasetfilepath=config.train_dataset_file_path)
+                                                                                        lang2='Label',
+                                                                                        datasetfilepath=config.train_dataset_file_path)
         #when path of training damca_dataset is a folder
         elif(os.path.isdir(config.train_dataset_file_path)):
             for each_path in os.listdir(config.train_dataset_file_path):
@@ -55,28 +54,28 @@ class TFTraining:
                 if each_path.__contains__('readme.md') or each_path.__contains__('.ipynb_checkpoints'):
                     continue
                 temp_input_lang, temp_output_lang, temp_train_pairs = self.dictonary.prepareData(lang1='Context',
-                                                                                            lang2='Label',
-                                                                                            reverse=True,
-                                                                datasetfilepath=os.path.join(config.train_dataset_file_path,each_path))
+                                                                                                 lang2='Label',
+                                                                                                 datasetfilepath=os.path.join(config.train_dataset_file_path,each_path))
                 train_pairs.extend(temp_train_pairs)
                 self.input_lang.appendLang(temp_input_lang)
                 self.output_lang.appendLang(temp_output_lang)
 
+
         if is_save_vocabulary == True:
             print('Saving Input and Output Vocabulary into the Disk....')
             self.input_lang = self.dictonary.save_vocabulary(vocab_path=config.input_vocab_file_path,
-                                                   lang=self.input_lang,
-                                                   max_size=self.input_vocab_size)
+                                                             lang=self.input_lang,
+                                                             max_size=config.MAX_VOCAB_SIZE_INPUT)
             self.output_lang = self.dictonary.save_vocabulary(vocab_path=config.output_vocab_file_path,
-                                                    lang=self.output_lang,
-                                                    max_size=self.output_vocab_size)
+                                                              lang=self.output_lang,
+                                                              max_size=config.MAX_VOCAB_SIZE_OUTPUT)
 
         else:
             print("Resizing Vocabulary ....")
             self.input_lang = self.dictonary.vocabResize(lang=self.input_lang,
-                                               max_size=self.input_vocab_size)
+                                                         max_size=config.MAX_VOCAB_SIZE_INPUT)
             self.output_lang = self.dictonary.vocabResize(lang=self.output_lang,
-                                                max_size=self.output_vocab_size)
+                                                          max_size=config.MAX_VOCAB_SIZE_OUTPUT)
 
         encoder_input, decoder_input, decoder_output = CreateDataset.datasetCreation(n_iters=len(train_pairs),
                                                                                      pairs=train_pairs,
@@ -89,16 +88,30 @@ class TFTraining:
 
         #Define Buffer size. And then shuffle them based on number of batch(N_BATCH) and create batched damca_dataset.
         BUFFER_SIZE = len(encoder_input)
+        train_size = int(0.9 * BUFFER_SIZE)
+        val_size = int(0.1 * BUFFER_SIZE)
         N_BATCH = BUFFER_SIZE // config.batch_size
         dataset = tf.data.Dataset.from_tensor_slices((encoder_input, decoder_output)).shuffle(BUFFER_SIZE)
-        dataset = dataset.batch(config.batch_size, drop_remainder=True)
+        train_dataset = dataset.take(train_size)
+        val_dataset = dataset.skip(val_size)
+        train_dataset = train_dataset.batch(config.batch_size, drop_remainder=True)
 
 
         #Define loss function: Sparse softmax cross entropy
         def loss_function(real, pred):
-            mask = 1 - np.equal(real, 0)
+            mask = 1 - np.equal(real, config.PADDED_Token)
             loss_ = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=real, logits=pred) * mask
-            return tf.reduce_mean(loss_)
+
+            # Average over actual sequence lengths.
+            cross_entropy = tf.reduce_sum(loss_, axis=0)
+            actual_mask = tf.reduce_sum(mask)
+            actual_mask = tf.cast(actual_mask, tf.float32)
+            if actual_mask > 0:
+                cross_entropy /= actual_mask
+            else:
+                cross_entropy = actual_mask
+
+            return cross_entropy
 
 
         #The checkpoint for the model to be saved after fixed iteration
@@ -107,14 +120,13 @@ class TFTraining:
                                          encoder=self.encoder,
                                          decoder=self.decoder)
 
-        #Training
+        # Training
+        hidden = self.encoder.initialize_hidden_state()
         for epoch in range(config.epochs):
             start = time.time()
-
-            hidden = self.encoder.initialize_hidden_state()
             total_loss = 0
 
-            for (batch, (enc_inp,dec_out)) in enumerate(dataset):
+            for (batch, (enc_inp,dec_out)) in enumerate(train_dataset):
                 loss = 0
                 with tf.GradientTape() as tape:
                     enc_output, enc_hidden = self.encoder(enc_inp, hidden)
@@ -127,7 +139,9 @@ class TFTraining:
                         # passing enc_output to the decoder
                         predictions, dec_hidden, _ = self.decoder(dec_input, dec_hidden, enc_output)
 
+
                         loss += loss_function(dec_out[:, t], predictions)
+
 
                         # using teacher forcing
                         dec_input = tf.expand_dims(dec_out[:, t], 1)
@@ -142,6 +156,7 @@ class TFTraining:
 
                 self.optimizer.apply_gradients(zip(gradients, variables))
 
+
                 if batch % 100 == 0:
                     print('Epoch {} Batch {} Loss {:.4f}'.format(epoch + 1,
                                                                  batch,
@@ -155,7 +170,7 @@ class TFTraining:
             print('Time taken for 1 epoch {} sec\n'.format(time.time() - start))
 
 
-class TFTesting:
+class TFEstimatorTesting:
     def __init__(self, input_vocab_size,output_vocab_size,input_lang,output_lang):
         self.input_vocab_size = input_vocab_size
         self.output_vocab_size = output_vocab_size
@@ -277,7 +292,7 @@ class TFTesting:
 
 
 
-class TFOneTesting:
+class TFEstimatorOneTesting:
     def __init__(self, input_vocab_size,output_vocab_size,input_lang,output_lang,input_seq):
         self.input_vocab_size = input_vocab_size
         self.output_vocab_size = output_vocab_size
@@ -356,18 +371,6 @@ class TFOneTesting:
                 result.append(sequence)
             return result, test_pairs
 
-        # function for plotting the attention weights
-        def plot_attention(attention, predicted_sentence):
-            fig = plt.figure(figsize=(10, 10))
-            ax = fig.add_subplot(1, 1, 1)
-            ax.matshow(attention, cmap='viridis')
-
-            fontdict = {'fontsize': 14}
-
-            ax.set_xticklabels([''] + self.input_seq, fontdict=fontdict, rotation=90)
-            ax.set_yticklabels([''] + predicted_sentence, fontdict=fontdict)
-
-            plt.show()
 
         def translate(encoder, decoder):
             result,test_pairs = evaluate(encoder, decoder)
@@ -381,9 +384,6 @@ class TFOneTesting:
             print('Predicted translation:')
             for each_sequence in result:
                 print(each_sequence)
-
-            #attention_plot = attention_plot[:len(result.split(' ')), :len(result.split(' '))]
-            #plot_attention(attention_plot, result.split(' '))
 
 
         encoder = Encoder(self.input_vocab_size, config.MAX_LENGTH_Input, config.embedding_width, config.hidden_size, config.batch_size)

@@ -4,43 +4,52 @@ config.init()
 
 def BiLSTM(units,MAX_LENGTH_Input,embedding_width):
     if tf.test.is_gpu_available():
-        return tf.keras.layers.Bidirectional(tf.keras.layers.CuDNNLSTM(units,
-                                                                        return_sequences=True,
-                                                                        return_state=True),
-                                             input_shape=(MAX_LENGTH_Input, embedding_width)
-                                             )
+        return tf.keras.layers.Bidirectional(tf.keras.layers.CuDNNLSTM(units=units,
+                                                                       bias_regularizer = tf.keras.regularizers.l1_l2(l1=config.l1_regularization,
+                                                                                                                      l2=config.l2_regularization),
+                                                                       kernel_regularizer= tf.keras.regularizers.l1_l2(l1=config.l1_regularization,
+                                                                                                                       l2=config.l2_regularization),
+                                                                       recurrent_regularizer = tf.keras.regularizers.l1_l2(l1=config.l1_regularization,
+                                                                                                                           l2=config.l2_regularization),
+                                                                       return_sequences=True,
+                                                                       return_state = True),
+                                             input_shape=(MAX_LENGTH_Input,embedding_width))
     else:
-        return tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(units,
-                                                                        return_sequences=True,
-                                                                        return_state=True),
-                                             input_shape=(MAX_LENGTH_Input, embedding_width)
-                                             )
-
-#def BiLSTM(units):
-    # If you have a GPU, we recommend using CuDNNGRU(provides a 3x speedup than GRU)
-    # the code automatically does that.
- #   if tf.test.is_gpu_available():
-  #      return tf.keras.layers.CuDNNGRU(units,
-   #                                     return_sequences=True,
-    #                                    return_state=True,
-     #                                   recurrent_initializer='glorot_uniform')
- #   else:
-  #      return tf.keras.layers.GRU(units,
-   #                                return_sequences=True,
-    #                               return_state=True,
-     #                              recurrent_activation='sigmoid',
-      #                             recurrent_initializer='glorot_uniform')
+        return tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(units=units,
+                                                                  bias_regularizer = tf.keras.regularizers.l1_l2(l1=config.l1_regularization,
+                                                                                                                 l2=config.l2_regularization),
+                                                                  kernel_regularizer= tf.keras.regularizers.l1_l2(l1=config.l1_regularization,
+                                                                                                                  l2=config.l2_regularization),
+                                                                  recurrent_regularizer = tf.keras.regularizers.l1_l2(l1=config.l1_regularization,
+                                                                                                                      l2=config.l2_regularization),
+                                                                  return_sequences=True,
+                                                                  return_state = True),
+                                             input_shape=(MAX_LENGTH_Input, embedding_width))
 
 
 class Encoder(tf.keras.Model):
     def __init__(self, vocab_size, max_length, embedding_dim, enc_units, batch_sz):
         super(Encoder, self).__init__()
+
+        #variables, parameters and hyper parameters defination
         self.batch_sz = batch_sz
         self.max_length = max_length
         self.enc_units = enc_units
-        self.embedding = tf.keras.layers.Embedding(vocab_size, embedding_dim)
-        self.dropout = tf.keras.layers.Dropout(config.dropout)
-        self.BiLSTM = BiLSTM(self.enc_units,max_length,embedding_dim)
+
+
+        #layers definations
+        self.embedding = tf.keras.layers.Embedding(input_dim= vocab_size,
+                                                   output_dim=embedding_dim,
+                                                   mask_zero = True,
+                                                   input_length= max_length,
+                                                   embeddings_regularizer=tf.keras.regularizers.l1_l2(l1=config.l1_regularization,
+                                                                                                      l2=config.l2_regularization))
+        self.dropout = tf.keras.layers.Dropout(rate= config.dropout)
+        self.BiLSTM = BiLSTM(units = self.enc_units,
+                             MAX_LENGTH_Input = max_length,
+                             embedding_width = embedding_dim)
+
+
 
     def call(self, x, hidden):
         x = self.embedding(x)
@@ -55,21 +64,51 @@ class Encoder(tf.keras.Model):
         initial_state = tf.expand_dims(tf.zeros((self.enc_units)),axis=0)
         return [initial_state]*2
 
+
+
+
 class Decoder(tf.keras.Model):
     def __init__(self, vocab_size, max_length ,embedding_dim, dec_units, batch_sz):
         super(Decoder, self).__init__()
+
+        # variables, parameters and hyper parameters defination
         self.batch_sz = batch_sz
         self.max_length = max_length
         self.dec_units = dec_units
-        self.embedding = tf.keras.layers.Embedding(vocab_size, embedding_dim)
-        self.dropout = tf.keras.layers.Dropout(config.dropout)
-        self.BiLSTM = BiLSTM(self.dec_units,max_length,embedding_dim)
-        self.fc = tf.keras.layers.Dense(vocab_size,activation="softmax")
+
+        # layers definations
+        self.embedding = tf.keras.layers.Embedding(input_dim= vocab_size,
+                                                   output_dim=embedding_dim,
+                                                   mask_zero = True,
+                                                   input_length= max_length,
+                                                   embeddings_regularizer=tf.keras.regularizers.l1_l2(l1=config.l1_regularization,
+                                                                                                      l2=config.l2_regularization))
+        self.dropout = tf.keras.layers.Dropout(rate= config.dropout)
+        self.BiLSTM = BiLSTM(units = self.dec_units,
+                             MAX_LENGTH_Input = max_length,
+                             embedding_width = embedding_dim)
+        self.fc = tf.keras.layers.Dense(units=vocab_size,
+                                        bias_regularizer=tf.keras.regularizers.l1_l2(l1=config.l1_regularization,
+                                                                                     l2=config.l2_regularization),
+                                        kernel_regularizer=tf.keras.regularizers.l1_l2(l1=config.l1_regularization,
+                                                                                       l2=config.l2_regularization))
 
         # used for attention
-        self.W1 = tf.keras.layers.Dense(self.dec_units)
-        self.W2 = tf.keras.layers.Dense(self.dec_units)
-        self.V = tf.keras.layers.Dense(1)
+        self.W1 = tf.keras.layers.Dense(units = self.dec_units,
+                                        bias_regularizer=tf.keras.regularizers.l1_l2(l1=config.l1_regularization,
+                                                                                     l2=config.l2_regularization),
+                                        kernel_regularizer=tf.keras.regularizers.l1_l2(l1=config.l1_regularization,
+                                                                                       l2=config.l2_regularization))
+        self.W2 = tf.keras.layers.Dense(units = self.dec_units,
+                                        bias_regularizer=tf.keras.regularizers.l1_l2(l1=config.l1_regularization,
+                                                                                     l2=config.l2_regularization),
+                                        kernel_regularizer=tf.keras.regularizers.l1_l2(l1=config.l1_regularization,
+                                                                                       l2=config.l2_regularization))
+        self.V = tf.keras.layers.Dense(units = 1,
+                                        bias_regularizer=tf.keras.regularizers.l1_l2(l1=config.l1_regularization,
+                                                                                     l2=config.l2_regularization),
+                                        kernel_regularizer=tf.keras.regularizers.l1_l2(l1=config.l1_regularization,
+                                                                                       l2=config.l2_regularization))
 
     def call(self, x, hidden, enc_output):
         '''
@@ -81,10 +120,19 @@ class Decoder(tf.keras.Model):
         And the pseudo-code:
 
         score = FC(tanh(FC(EO) + FC(H)))
-        attention weights = softmax(score, axis = 1). Softmax by default is applied on the last axis but here we want to apply it on the 1st axis, since the shape of score is (batch_size, max_length, 1). Max_length is the length of our input. Since we are trying to assign a weight to each input, softmax should be applied on that axis.
-        context vector = sum(attention weights * EO, axis = 1). Same reason as above for choosing axis as 1.
+        attention weights = softmax(score, axis = 1).
+
+        Softmax by default is applied on the last axis but here we want to apply it on the 1st axis,
+        since the shape of score is (batch_size, max_length, 1). Max_length is the length of our input.
+        Since we are trying to assign a weight to each input, softmax should be applied on that axis.
+
+        context vector = sum(attention weights * EO, axis = 1).
+
+        Same reason as above for choosing axis as 1.
+
         embedding output = The input to the decoder X is passed through an embedding layer.
         merged vector = concat(embedding output, context vector)
+
         This merged vector is then given to the Bi-LSTM
         The shapes of all the vectors at each step have been specified in the comments in the code:
 
@@ -110,11 +158,11 @@ class Decoder(tf.keras.Model):
         context_vector = tf.reduce_sum(context_vector, axis=1)
         # x shape after passing through embedding == (batch_size, 1, embedding_dim)
         x = self.embedding(x)
+
+        x = self.dropout(x)
         # x = tf.cast(x, dtype= tf.float32)
         # x shape after concatenation == (batch_size, 1, embedding_dim + hidden_size*2)
         x = tf.concat([tf.expand_dims(context_vector, 1), x], axis=-1)
-
-        x = self.dropout(x)
 
         # passing the concatenated vector to the GRU
         output, forward_h, forward_c, backward_h, backward_c = self.BiLSTM(x)
@@ -125,6 +173,9 @@ class Decoder(tf.keras.Model):
         # output shape == (batch_size, 1, hidden_size*2)
         output = tf.reshape(output, (-1, output.shape[2]))
         # output shape after reshape == (batch_size*1, hidden_size*2)
+
+        output = self.dropout(output)
+
         x = self.fc(output)
         # x shape == (batch_size * 1, vocab)
 

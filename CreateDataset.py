@@ -6,6 +6,8 @@ import numpy as np
 def indexesFromSentence(lang, sentence):
     numVec = []
     for word in sentence.split(' '):
+        if word.strip() == '':
+            continue
         if(word in lang.word2index):
             numVec.append(lang.word2index[word])
         else:
@@ -28,7 +30,7 @@ def tensorFromSentence(lang, sentence, decoder_input_status):
 
 
 def tensorsFromPair(pair,input_lang,output_lang):
-    encoder_input = tensorFromSentence(input_lang, pair[0].strip(),False)
+    encoder_input = tensorFromSentence(input_lang, pair[2].strip(),False)
     decoder_output = tensorFromSentence(output_lang, pair[1].strip(),False)
     decoder_input = tensorFromSentence(output_lang, pair[1].strip(), True)
     return (encoder_input, decoder_input,decoder_output)
@@ -61,9 +63,11 @@ def datasetCreation(n_iters,pairs,input_lang,output_lang, MAX_LENGTH_Input,MAX_L
         decoder_input.append(training_pair[1])
         decoder_output.append(training_pair[2])
 
-    X_Input = sequence.pad_sequences(encoder_input, maxlen=MAX_LENGTH_Input, padding='post', truncating='post')
-    Y_Input = sequence.pad_sequences(decoder_input, maxlen=MAX_LENGTH_Output,padding='post', truncating='post')
-    Y_Output = sequence.pad_sequences(decoder_output, maxlen=MAX_LENGTH_Output, padding='post', truncating='post')
+
+    X_Input = sequence.pad_sequences(encoder_input, maxlen=MAX_LENGTH_Input, padding='post', truncating='post',value=config.PADDED_Token)
+    Y_Input = sequence.pad_sequences(decoder_input, maxlen=MAX_LENGTH_Output,padding='post', truncating='post',value=config.PADDED_Token)
+    Y_Output = sequence.pad_sequences(decoder_output, maxlen=MAX_LENGTH_Output, padding='post', truncating='post',value=config.PADDED_Token)
+
 
     sess = tf.InteractiveSession()
 

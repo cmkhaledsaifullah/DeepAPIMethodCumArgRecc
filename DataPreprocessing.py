@@ -17,10 +17,10 @@ class Lang:
 
         else:
             self.name = name
-            self.word2index = {"UNK":0,"SOS": 1, "EOS": 2}
-            self.word2count = {"UNK":1, "SOS":1, "EOS":1}
-            self.index2word = {0:"UNK",1: "SOS", 2: "EOS"}
-            self.n_words = 3  # Count SOS and EOS
+            self.word2index = {"PAD":config.PADDED_Token,"UNK":config.UNK_token,"SOS": config.SOS_token, "EOS": config.EOS_token}
+            self.word2count = {"PAD":1,"UNK":1, "SOS":1, "EOS":1}
+            self.index2word = {config.PADDED_Token:"PAD",config.UNK_token:"UNK",config.SOS_token: "SOS", config.EOS_token: "EOS"}
+            self.n_words = config.EOS_token+1  # Count SOS and EOS
 
     def addSentence(self, sentence):
         for word in sentence.strip().split(' '):
@@ -47,7 +47,6 @@ class Lang:
     def appendLang(self,new_lang):
         for word in new_lang.word2index:
             if word.strip() != "":
-                #print(word)
                 self.addWords(word,new_lang.word2count[word])
 
     def removeWord(self,word):
@@ -56,7 +55,7 @@ class Lang:
             del self.word2index[word]
             del self.word2count[word]
             del self.index2word[index]
-            self.n_words-= 1
+            self.n_words -= 1
         else:
             print("Cant Find the Word %s in the Dictonary" % word )
 
@@ -73,57 +72,51 @@ class Vocab:
 
 
 
-    def readLangs(self,data,lang1, lang2, reverse=False):
+    def readLangs(self,data):
         pairs = []
         for eachline in data:
             token = eachline.split('+++$+++')
             input = token[2].strip()+" "+token[3].strip()
             pairs.append((token[0],token[1].strip(),input.strip()))
-        if reverse:
-            pairs = [list(reversed(p)) for p in pairs]
-            input_lang = Lang(lang2)
-            output_lang = Lang(lang1)
-        else:
-            input_lang = Lang(lang1)
-            output_lang = Lang(lang2)
+        return pairs
 
-        return input_lang, output_lang, pairs
-
-    def prepareData(self, lang1, lang2, reverse, datasetfilepath):
+    def prepareData(self, lang1, lang2, datasetfilepath):
         train_data = self.collectDataset(datasetfilepath = datasetfilepath)
-        input_lang, output_lang, pairs = self.readLangs(data = train_data,
-                                                        lang1 = lang2,
-                                                        lang2 = lang1,
-                                                        reverse = reverse)
+        pairs = self.readLangs(data = train_data)
+        input_lang = Lang(lang1)
+        output_lang = Lang(lang2)
         for pair in pairs:
-            input_lang.addSentence(pair[0])
+            input_lang.addSentence(pair[2])
             output_lang.addSentence(pair[1])
         return input_lang, output_lang, pairs
 
-    def prepareOneData(self,lang1,lang2,reverse,input_line):
+    def prepareOneData(self,lang1,lang2,input_line):
         test_data = []
         test_data.append(input_line)
-        input_lang, output_lang, pairs = self.readLangs(data = test_data,
-                                                        lang1 = lang2,
-                                                        lang2 = lang1,
-                                                        reverse = reverse)
-        for pair in pairs:
-            input_lang.addSentence(pair[0])
-            output_lang.addSentence(pair[1])
+        pairs = self.readLangs(data = test_data)
+        input_lang = Lang(lang1)
+        output_lang = Lang(lang2)
+        input_lang.addSentence(pairs[2])
+        output_lang.addSentence(pairs[1])
         return input_lang, output_lang, pairs
 
     def vocabResize(self,lang,max_size):
-        print(lang.n_words)
-        test = OrderedDict(sorted(lang.word2count.items(), key=itemgetter(1),reverse=True))
-        n_items = self.take(max_size, test.items())
-        lang = Lang()
+        #print("The size of",lang.name,"before resizing is:",lang.n_words)
+        lang.removeWord('PAD')
+        lang.removeWord('UNK')
+        lang.removeWord('SOS')
+        lang.removeWord('EOS')
+        orderedVocab = OrderedDict(sorted(lang.word2count.items(), key=itemgetter(1),reverse=True))
+        n_items = self.take(max_size, orderedVocab.items())
+        lang = Lang(lang.name)
         for word in n_items:
-            lang.addWord(word[0])
+            lang.addWord(word)
 
         if lang.n_words < max_size:
             for i in range(lang.n_words,max_size):
                 lang.addWord("NA"+str(i))
 
+        #print("The size of", lang.name, "after resizing is:", lang.n_words)
         return lang
 
     def ouputProcess(self,predicted_strings,labelString,lang):
@@ -154,14 +147,18 @@ class Vocab:
             elif config.top_k >= 1:
                 retVal = self.typefiltering(all_min,random.uniform(self.threshold[0],self.threshold[1]),labelString,ijz,iqa,tempval,temp)
 
-
-
-
         return retVal
 
 
     def take(self,max_size, iterable):
-        return list(islice(iterable, max_size))
+        retList = []
+        i=0
+        for each_entry in iterable:
+            retList.append(each_entry[0])
+            i = i + 1
+            if i == max_size:
+                break
+        return retList
 
     def typefiltering(self,altime_min,minvalue,labelString,filteredtoken,fiteringregex,recievertype,flash):
         retVal = []
@@ -207,7 +204,6 @@ class Vocab:
 
     def save_vocabulary(self,vocab_path,lang,max_size):
         lang = self.vocabResize(lang,max_size)
-
         f = open(vocab_path, "w")
         counter = 1
         for eachword in lang.index2word:
@@ -215,7 +211,7 @@ class Vocab:
             if counter > max_size:
                 break
 
-            if( lang.index2word[eachword] != "UNK" and lang.index2word[eachword] != "SOS" and lang.index2word[eachword] != "EOS"):
+            if( lang.index2word[eachword] != "PAD" and lang.index2word[eachword] != "UNK" and lang.index2word[eachword] != "SOS" and lang.index2word[eachword] != "EOS"):
                 f.write(lang.index2word[eachword]+'\n')
 
             counter +=1
