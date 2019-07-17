@@ -1,41 +1,41 @@
 import config
 from nltk.translate.bleu_score import sentence_bleu,SmoothingFunction
 
-def evaluate(output):
+def evaluate(actualPredList):
     correct_pred = 0
     null_pred = 0
     incorrect_pred = 0
-    precision = 0
-    recall = 0
-    fmeasure = 0
-    blue_score=0
-    mrr = 0;
+    precision = 0.0
+    recall = 0.0
+    fscore = 0.0
+    blue_score=0.0
+    mrr = 0.0
     chencherry = SmoothingFunction()
-    for each_output in output:
-        if each_output[0] in each_output[1]:
+    for each_actual_pred in actualPredList:
+        if each_actual_pred[0] in each_actual_pred[1]:
             correct_pred += 1
-            mrr += (1/(each_output[1].index(each_output[0])+1))
-        elif len(each_output[1]) == 0:
+            mrr += (1/(each_actual_pred[1].index(each_actual_pred[0])+1))
+        elif len(each_actual_pred[1]) == 0:
             null_pred += 1
         else:
             incorrect_pred +=1
-        candidate = each_output[0].split(' ')
-        reference = []
-        for each_pred in each_output[1]:
+        actual_candidate = each_actual_pred[0].split(' ')
+        pred_reference = []
+        for each_pred in each_actual_pred[1]:
             temp = each_pred.split(' ')
-            reference.append(temp)
+            pred_reference.append(temp)
 
-        if(len(each_output[1]) == 0):
+        if(len(each_actual_pred[1]) == 0):
             blue_score += 0
         else:
-            if(len(candidate)>= 4):
-                blue_score += sentence_bleu(reference,candidate,weights=(0.25,0.25,0.25,0.25),smoothing_function=chencherry.method4)
-            elif (len(candidate)>= 3):
-                blue_score += sentence_bleu(reference, candidate, weights=(0.33, 0.33, 0.33, 0),smoothing_function=chencherry.method3)
-            elif (len(candidate)>= 2):
-                blue_score += sentence_bleu(reference, candidate, weights=(0.5, 0.5, 0, 0),smoothing_function=chencherry.method2)
+            if(len(actual_candidate)>= 4):
+                blue_score += sentence_bleu(pred_reference,actual_candidate,weights=(0.25,0.25,0.25,0.25),smoothing_function=chencherry.method4)
+            elif (len(actual_candidate)>= 3):
+                blue_score += sentence_bleu(pred_reference, actual_candidate, weights=(0.33, 0.33, 0.33, 0),smoothing_function=chencherry.method3)
+            elif (len(actual_candidate)>= 2):
+                blue_score += sentence_bleu(pred_reference, actual_candidate, weights=(0.5, 0.5, 0, 0),smoothing_function=chencherry.method2)
             else:
-                blue_score += sentence_bleu(reference, candidate, weights=(1, 0, 0, 0),smoothing_function=chencherry.method1)
+                blue_score += sentence_bleu(pred_reference, actual_candidate, weights=(1, 0, 0, 0),smoothing_function=chencherry.method1)
 
 
     if (correct_pred+incorrect_pred) != 0:
@@ -43,15 +43,21 @@ def evaluate(output):
     if (correct_pred+null_pred) != 0:
         recall = (correct_pred/(correct_pred+null_pred))
     if (precision+recall) != 0:
-        fmeasure = ((2*precision*recall)/(precision+recall))
-    blue_score = blue_score/len(output)
-    mrr = mrr/len(output)
-
-    print()
-    print("Top %s Reccomendation:" %(config.top_k))
-    print("Precision: %s" %(precision))
-    print("Recall: %s" %(recall))
-    print("F-1 Measure: %s" % (fmeasure))
-    print("Bleu Score: %s" % (blue_score))
-    print("MRR: %s" % (mrr))
+        fscore = ((2*precision*recall)/(precision+recall))
+    blue_score = blue_score/len(actualPredList)
+    mrr = mrr/len(actualPredList)
+    evaluation_text =''.join( "===================================================================\n"+\
+                      "File: "+config.test_dataset_file_name+"\n"+\
+                      "Top "+ str(config.top_k) +" Reccomendation:"+"\n"+\
+                      "Precision: "+str(precision)+"\n"+\
+                      "Recall: "+str(recall)+"\n"+\
+                      "F-1 Score: "+str(fscore)+"\n"+\
+                      "BLEU Score: "+str(blue_score)+"\n"+\
+                      "MRR: "+str(mrr)+"\n"+\
+                      "===================================================================\n")
+    print(evaluation_text)
+    print("Writting evaluation report at", config.evaluation_file_path)
+    f = open(config.evaluation_file_path, "a+")
+    f.write(evaluation_text)
+    f.close()
 

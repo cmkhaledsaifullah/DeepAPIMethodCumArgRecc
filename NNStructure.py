@@ -4,26 +4,22 @@ config.init()
 
 def BiLSTM(units,MAX_LENGTH_Input,embedding_width):
     if tf.test.is_gpu_available():
-        return tf.keras.layers.Bidirectional(tf.keras.layers.CuDNNLSTM(num_units=units,
+        return tf.keras.layers.Bidirectional(tf.keras.layers.CuDNNLSTM(units=units,
                                                                        bias_regularizer = tf.keras.regularizers.l1_l2(l1=config.l1_regularization,
                                                                                                                       l2=config.l2_regularization),
                                                                        kernel_regularizer= tf.keras.regularizers.l1_l2(l1=config.l1_regularization,
                                                                                                                        l2=config.l2_regularization),
-                                                                       activity_regularizer = tf.keras.regularizers.l1_l2(l1=config.l1_regularization,
-                                                                                                                          l2=config.l2_regularization),
                                                                        recurrent_regularizer = tf.keras.regularizers.l1_l2(l1=config.l1_regularization,
                                                                                                                            l2=config.l2_regularization),
                                                                        return_sequences=True,
                                                                        return_state = True),
                                              input_shape=(MAX_LENGTH_Input,embedding_width))
     else:
-        return tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(num_units=units,
+        return tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(units=units,
                                                                   bias_regularizer = tf.keras.regularizers.l1_l2(l1=config.l1_regularization,
                                                                                                                  l2=config.l2_regularization),
                                                                   kernel_regularizer= tf.keras.regularizers.l1_l2(l1=config.l1_regularization,
                                                                                                                   l2=config.l2_regularization),
-                                                                  activity_regularizer = tf.keras.regularizers.l1_l2(l1=config.l1_regularization,
-                                                                                                                     l2=config.l2_regularization),
                                                                   recurrent_regularizer = tf.keras.regularizers.l1_l2(l1=config.l1_regularization,
                                                                                                                       l2=config.l2_regularization),
                                                                   return_sequences=True,
@@ -72,7 +68,7 @@ class Encoder(tf.keras.Model):
 
 
 class Decoder(tf.keras.Model):
-    def __init__(self, vocab_size, max_length ,embedding_dim, dec_units, batch_sz):
+    def __init__(self, vocab_size, max_length ,embedding_dim, dec_units, batch_sz,test_status):
         super(Decoder, self).__init__()
 
         # variables, parameters and hyper parameters defination
@@ -88,40 +84,39 @@ class Decoder(tf.keras.Model):
                                                    embeddings_regularizer=tf.keras.regularizers.l1_l2(l1=config.l1_regularization,
                                                                                                       l2=config.l2_regularization))
         self.dropout = tf.keras.layers.Dropout(rate= config.dropout)
-        self.BiLSTM = BiLSTM(units = self.enc_units,
+        self.BiLSTM = BiLSTM(units = self.dec_units,
                              MAX_LENGTH_Input = max_length,
                              embedding_width = embedding_dim)
-        self.fc = tf.keras.layers.Dense(units=vocab_size,
-                                        activation="softmax",
-                                        bias_regularizer=tf.keras.regularizers.l1_l2(l1=config.l1_regularization,
-                                                                                     l2=config.l2_regularization),
-                                        kernel_regularizer=tf.keras.regularizers.l1_l2(l1=config.l1_regularization,
-                                                                                       l2=config.l2_regularization),
-                                        activity_regularizer=tf.keras.regularizers.l1_l2(l1=config.l1_regularization,
-                                                                                         l2=config.l2_regularization))
+        if test_status == True:
+            self.fc = tf.keras.layers.Dense(units=vocab_size,
+                                            activation='softmax',
+                                            bias_regularizer=tf.keras.regularizers.l1_l2(l1=config.l1_regularization,
+                                                                                         l2=config.l2_regularization),
+                                            kernel_regularizer=tf.keras.regularizers.l1_l2(l1=config.l1_regularization,
+                                                                                           l2=config.l2_regularization))
+        else:
+            self.fc = tf.keras.layers.Dense(units=vocab_size,
+                                            bias_regularizer=tf.keras.regularizers.l1_l2(l1=config.l1_regularization,
+                                                                                         l2=config.l2_regularization),
+                                            kernel_regularizer=tf.keras.regularizers.l1_l2(l1=config.l1_regularization,
+                                                                                           l2=config.l2_regularization))
 
         # used for attention
         self.W1 = tf.keras.layers.Dense(units = self.dec_units,
                                         bias_regularizer=tf.keras.regularizers.l1_l2(l1=config.l1_regularization,
                                                                                      l2=config.l2_regularization),
                                         kernel_regularizer=tf.keras.regularizers.l1_l2(l1=config.l1_regularization,
-                                                                                       l2=config.l2_regularization),
-                                        activity_regularizer=tf.keras.regularizers.l1_l2(l1=config.l1_regularization,
-                                                                                         l2=config.l2_regularization))
+                                                                                       l2=config.l2_regularization))
         self.W2 = tf.keras.layers.Dense(units = self.dec_units,
                                         bias_regularizer=tf.keras.regularizers.l1_l2(l1=config.l1_regularization,
                                                                                      l2=config.l2_regularization),
                                         kernel_regularizer=tf.keras.regularizers.l1_l2(l1=config.l1_regularization,
-                                                                                       l2=config.l2_regularization),
-                                        activity_regularizer=tf.keras.regularizers.l1_l2(l1=config.l1_regularization,
-                                                                                         l2=config.l2_regularization))
+                                                                                       l2=config.l2_regularization))
         self.V = tf.keras.layers.Dense(units = 1,
                                         bias_regularizer=tf.keras.regularizers.l1_l2(l1=config.l1_regularization,
                                                                                      l2=config.l2_regularization),
                                         kernel_regularizer=tf.keras.regularizers.l1_l2(l1=config.l1_regularization,
-                                                                                       l2=config.l2_regularization),
-                                        activity_regularizer=tf.keras.regularizers.l1_l2(l1=config.l1_regularization,
-                                                                                         l2=config.l2_regularization))
+                                                                                       l2=config.l2_regularization))
 
     def call(self, x, hidden, enc_output):
         '''

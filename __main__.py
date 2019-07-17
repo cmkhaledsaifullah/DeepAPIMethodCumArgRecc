@@ -1,10 +1,7 @@
 import config,os
 import tensorflow as tf
-from pathlib import Path
 from DataPreprocessing import Vocab,Lang
-from TFEstimatorOperation import TFEstimatorTraining,TFEstimatorOneTesting,TFEstimatorTesting
-from KerasOperation import Training,Testing,OneTesting
-from TFOperation import TFTraining,TFTesting,TFOneTesting
+from Operation import Training,Inferring,Testing
 
 
 config.init()
@@ -16,10 +13,10 @@ if tf.test.is_gpu_available():
 input_vocab_size = config.MAX_VOCAB_SIZE_INPUT+ config.EOS_token+1
 output_vocab_size = config.MAX_VOCAB_SIZE_OUTPUT+ config.EOS_token+1
 
-input_lang = Lang()
-output_lang = Lang()
+input_lang = Lang('Context')
+output_lang = Lang('Label')
 
-var = input("Enter one of the mode: \n"
+var = input("Enter one of the modes: \n"
             " train : To train the model \n"
             " test: To test the model \n"
             " train-test: To train and then test \n"
@@ -27,20 +24,8 @@ var = input("Enter one of the mode: \n"
 
 if var == 'train':
 
-    #Keras Seq2Seq Implementation
-    if config.which_implementation == 'keras':
-        training = Training(input_vocab_size = input_vocab_size,
-                            output_vocab_size = output_vocab_size)
-
-    # Tensorflow Seq2Seq Implementation
-    elif config.which_implementation == 'tf':
-        training = TFTraining(input_vocab_size=input_vocab_size,
-                              output_vocab_size=output_vocab_size)
-
-    # Tensorflow Estimator Seq2Seq Implementation
-    elif config.which_implementation == 'tf_estimator':
-        training = TFEstimatorTraining(input_vocab_size = input_vocab_size,
-                              output_vocab_size = output_vocab_size)
+    training = Training(input_vocab_size = input_vocab_size,
+                        output_vocab_size = output_vocab_size)
 
     vocab_check = input("Are you going to Save the damca_vocabulary(y/n): ")
 
@@ -52,6 +37,12 @@ if var == 'train':
 
 
 elif var == 'test':
+    project_settings = 0
+    while project_settings != '1' and project_settings != '2':
+        project_settings = input("Enter which settings you wanna test?:\n"
+                                 " 1. Intra-Project Settings\n"
+                                 " 2. Cross-Project Settings\n")
+
 
     print('Loading Input Vocabulary.....')
     input_lang = Vocab.load_vocabulary(Vocab,
@@ -64,31 +55,12 @@ elif var == 'test':
                                         langName = 'Label',
                                         max_size = output_vocab_size)
 
-    # Keras Seq2Seq Implementation
-    if config.which_implementation == 'keras':
-        model_file = Path(config.model_file_path)
-        if model_file.is_file():
-            testing = Testing(input_vocab_size=input_vocab_size,
-                              output_vocab_size=output_vocab_size,
-                              input_lang=input_lang,
-                              output_lang=output_lang)
-
-    # Tensorflow Seq2Seq Implementation
-    if config.which_implementation == 'tf':
-        testing = TFTesting(input_vocab_size=input_vocab_size,
-                            output_vocab_size=output_vocab_size,
-                            input_lang=input_lang,
-                            output_lang=output_lang)
-
-
-    # Tensorflow Estimator Seq2Seq Implementation
-    if config.which_implementation == 'tf_estimator':
-        print("Implementing Tensorflow Estimator Version.....")
-        testing = TFEstimatorTesting(input_vocab_size = input_vocab_size,
-                            output_vocab_size = output_vocab_size,
-                            input_lang = input_lang,
-                            output_lang = output_lang)
-    testing.test()
+    print("Implementing Tensorflow Estimator Version.....")
+    testing = Testing(input_vocab_size = input_vocab_size,
+                        output_vocab_size = output_vocab_size,
+                        input_lang = input_lang,
+                        output_lang = output_lang)
+    testing.test(projectSetting=project_settings)
 
 
 elif var == 'infer':
@@ -103,43 +75,17 @@ elif var == 'infer':
                                         langName = 'Label',
                                         max_size = output_vocab_size)
 
-    # Keras Seq2Seq Implementation
-    if config.which_implementation == 'keras':
-        model_file = Path(config.model_file_path)
-        if model_file.is_file():
-            seq_input = input("Please enter the input in the following format \n"
-                          " ID +++$+++ <label Sequence> +++$+++ <reciever type> +++$+++ <context sequence> \n")
-            testing = OneTesting(input_vocab_size=input_vocab_size,
-                                output_vocab_size=output_vocab_size,
-                                input_lang=input_lang,
-                                output_lang=output_lang,
-                                input_seq=seq_input)
+    seq_input = input("Please enter the input in the following format: \n"
+                      " ID +++$+++ <label Sequence> +++$+++ <reciever type> +++$+++ <context sequence> \n")
+
+    inferring = Inferring(input_vocab_size=input_vocab_size,
+                          output_vocab_size=output_vocab_size,
+                          input_lang=input_lang,
+                          output_lang=output_lang,
+                          input_seq=seq_input)
 
 
-    #Tensorflow Seq2seq Implementation
-    if config.which_implementation == 'tf':
-        seq_input = input("Please enter the input in the following format \n"
-                          " ID +++$+++ <label Sequence> +++$+++ <reciever type> +++$+++ <context sequence> \n")
-
-        testing = TFOneTesting(input_vocab_size=input_vocab_size,
-                                output_vocab_size=output_vocab_size,
-                                input_lang=input_lang,
-                                output_lang=output_lang,
-                                input_seq=seq_input)
-
-    # Tensorflow Estimator Seq2seq Implementation
-    if config.which_implementation == 'tf_estimator':
-        seq_input = input("Please enter the input in the following format \n"
-                              " ID +++$+++ <label Sequence> +++$+++ <reciever type> +++$+++ <context sequence> \n")
-
-        testing = TFEstimatorOneTesting(input_vocab_size=input_vocab_size,
-                                output_vocab_size=output_vocab_size,
-                                input_lang=input_lang,
-                                output_lang=output_lang,
-                                input_seq=seq_input)
-
-
-    testing.test()
+    inferring.infer()
 
 
 

@@ -1,55 +1,57 @@
 def init():
-    global train_dataset_file_path, \
+    global \
+        top_k, \
+        train_dataset_file_path, \
+        test_dataset_file_name,\
         test_dataset_file_path,\
         input_vocab_file_path, \
         output_vocab_file_path, \
-        test_dataset_output_file_path, \
         checkpoints_folder_path, \
+        test_dataset_output_file_name, \
+        test_dataset_output_file_path, \
+        evaluation_file_path, \
         MAX_LENGTH_Input, \
         MAX_LENGTH_Output, \
+        MAX_VOCAB_SIZE_INPUT, \
+        MAX_VOCAB_SIZE_OUTPUT, \
         SOS_token,\
         EOS_token, \
         UNK_token, \
         PADDED_Token,\
-        teacher_forcing_ratio,\
         learning_Rate,\
         hidden_size,\
-        print_every,\
-        plot_every,\
         embedding_width,\
         batch_size,\
         epochs,\
         validation_split,\
-        n_layers,\
         dropout, \
+        threshold,\
         l1_regularization,\
         l2_regularization,\
-        loss,\
-        optimizer,\
-        metrics,\
-        dict_size,\
-        model_file_path, \
-        MAX_VOCAB_SIZE_INPUT, \
-        MAX_VOCAB_SIZE_OUTPUT,\
-        top_k, \
-        which_implementation, \
         gpu_id
+
+
+    #Predicion parameter
+    top_k = 10
 
     #All File Path
     root_folder = '/home/khaledkucse/Project/backup/damca'
-    train_dataset_file_path = root_folder+'/dataset/train_dataset'
 
-    test_dataset_file_path = root_folder+'/dataset/test_dataset/1.txt'
+    train_dataset_file_path = root_folder+'/dataset/train_dataset/'
+
+    test_dataset_file_name = 'eclipse_10'
+
+    test_dataset_file_path = root_folder+'/dataset/test_dataset/'+test_dataset_file_name+'.txt'
 
     input_vocab_file_path = root_folder+'/vocabulary/input.vocab'
 
     output_vocab_file_path = root_folder+'/vocabulary/output.vocab'
 
-    checkpoints_folder_path = root_folder+'/training_checkpoints'
+    checkpoints_folder_path = root_folder+'/training_checkpoints/'
 
-    model_file_path = root_folder+"/model/model.h5"
+    test_dataset_output_file_path = root_folder+'/result/'+test_dataset_file_name+'_top_'+str(top_k)+'.txt'
 
-    test_dataset_output_file_path = root_folder+"/result/eclipse_bilstm_c3_attn_bs_top_10_cross_1.txt"
+    evaluation_file_path = root_folder+'/evaluation/evaluation_results.txt'
 
 
     #Vocabualry and COrpus related parameter
@@ -85,21 +87,12 @@ def init():
 
     dropout = 0.2
 
+    threshold = [0.3, 0.5, 0.38, 0.57, 0.45, 0.62, 0.48, 0.64, 0.5, 0.66, 0.52, 0.67, 0.53, 0.68, 0.55, 0.7, 0.56, 0.72, 0.6, 0.75]
+
     l1_regularization = 0.0001
 
     l2_regularization = 0.0001
 
-    loss = 'categorical_crossentropy'
-
-    optimizer = 'rmsprop'
-
-    metrics = ['accuracy']
-
-    top_k = 10
-
-    #Options: keras, tf_estimator
-    which_implementation = 'tf_estimator'
-
     #GPU_ID when GPU is available:
-    gpu_id = "1"
+    gpu_id = '1'
 

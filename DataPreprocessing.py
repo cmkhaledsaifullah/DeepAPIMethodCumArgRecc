@@ -1,10 +1,8 @@
-from itertools import islice
 from collections import OrderedDict
 from operator import itemgetter
 
 import config
 import random
-from keras.preprocessing import text, sequence
 
 class Lang:
     def __init__(self, name=None):
@@ -62,15 +60,11 @@ class Lang:
 
 
 class Vocab:
-    def __init__(self):
-        self.threshold = [0.46,0.54,0.62,0.52,0.6]
 
     def collectDataset(self,datasetfilepath):
         lines = open(datasetfilepath, encoding='utf-8').read().strip().split('\n')
         random.shuffle(lines)
         return lines
-
-
 
     def readLangs(self,data):
         pairs = []
@@ -90,7 +84,7 @@ class Vocab:
             output_lang.addSentence(pair[1])
         return input_lang, output_lang, pairs
 
-    def prepareOneData(self,lang1,lang2,input_line):
+    def prepareInferData(self, lang1, lang2, input_line):
         test_data = []
         test_data.append(input_line)
         pairs = self.readLangs(data = test_data)
@@ -101,13 +95,13 @@ class Vocab:
         return input_lang, output_lang, pairs
 
     def vocabResize(self,lang,max_size):
-        #print("The size of",lang.name,"before resizing is:",lang.n_words)
         lang.removeWord('PAD')
         lang.removeWord('UNK')
         lang.removeWord('SOS')
         lang.removeWord('EOS')
         orderedVocab = OrderedDict(sorted(lang.word2count.items(), key=itemgetter(1),reverse=True))
-        n_items = self.take(max_size, orderedVocab.items())
+        n_items = self.sliceDict(max_size=max_size,
+                                 iterable=orderedVocab.items())
         lang = Lang(lang.name)
         for word in n_items:
             lang.addWord(word)
@@ -116,41 +110,10 @@ class Vocab:
             for i in range(lang.n_words,max_size):
                 lang.addWord("NA"+str(i))
 
-        #print("The size of", lang.name, "after resizing is:", lang.n_words)
         return lang
 
-    def ouputProcess(self,predicted_strings,labelString,lang):
-        retVal = predicted_strings
-        all_min = random.uniform(0,1)
-        token = labelString.split(' ')
-        furthur = token[0].split(':')
-        tempval = []
-        temp = []
-        if len(furthur) < 2:
-            return retVal
-        for each_sample in lang.word2index:
-            #print(each_sample,furthur)
-            if furthur[1] in each_sample and 'SN' not in each_sample:
-                tempval.append(each_sample)
-            elif 'SN' in each_sample or ':' not in each_sample:
-                temp.append(each_sample)
 
-        if len(tempval) > 0:
-            ijz = len(tempval)-1
-            iqa = len(temp)-1
-            if config.top_k >= 10:
-                retVal = self.typefiltering(all_min,random.uniform(self.threshold[3],self.threshold[4]), labelString, ijz, iqa, tempval, temp)
-            elif config.top_k >= 5:
-                retVal = self.typefiltering(all_min,random.uniform(self.threshold[2],self.threshold[3]), labelString, ijz, iqa, tempval, temp)
-            elif config.top_k >= 3:
-                retVal = self.typefiltering(all_min,random.uniform(self.threshold[1],self.threshold[2]), labelString, ijz, iqa, tempval, temp)
-            elif config.top_k >= 1:
-                retVal = self.typefiltering(all_min,random.uniform(self.threshold[0],self.threshold[1]),labelString,ijz,iqa,tempval,temp)
-
-        return retVal
-
-
-    def take(self,max_size, iterable):
+    def sliceDict(self, max_size, iterable):
         retList = []
         i=0
         for each_entry in iterable:
@@ -159,36 +122,6 @@ class Vocab:
             if i == max_size:
                 break
         return retList
-
-    def typefiltering(self,altime_min,minvalue,labelString,filteredtoken,fiteringregex,recievertype,flash):
-        retVal = []
-        if (altime_min <= minvalue):
-            if config.top_k == 1:
-                retVal.append(labelString)
-            else:
-                flag = 0
-                for i in range(config.top_k):
-                    ind = random.uniform(0,1)
-                    if flag == 0 and ind > 0.5:
-                        retVal.append(labelString)
-                        flag = 1
-                    else:
-                        s = recievertype[random.randint(0, filteredtoken)]
-                        fortune = random.randint(0, 4)
-                        for j in range(fortune):
-                            s = s + " " + flash[random.randint(0, fiteringregex)]
-                        retVal.append(s)
-        else:
-            for i in range(config.top_k):
-                s = recievertype[random.randint(0, filteredtoken)]
-                fortune = random.randint(0, 4)
-                for j in range(fortune):
-                    s = s + " " + flash[random.randint(0, fiteringregex)]
-                retVal.append(s)
-        return retVal
-
-    def getindex2word(self,lang,index):
-        return lang.index2word[index]
 
     def load_vocabulary(self,datapath,langName,max_size):
         lines = open(datapath, encoding='utf-8').read().strip().split('\n')
@@ -213,8 +146,8 @@ class Vocab:
 
             if( lang.index2word[eachword] != "PAD" and lang.index2word[eachword] != "UNK" and lang.index2word[eachword] != "SOS" and lang.index2word[eachword] != "EOS"):
                 f.write(lang.index2word[eachword]+'\n')
+                counter += 1
 
-            counter +=1
         f.close()
 
         return lang
